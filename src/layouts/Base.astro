@@ -1,0 +1,57 @@
+---
+import '@fontsource-variable/hanken-grotesk';
+import '@fontsource-variable/geist-mono';
+import '@fontsource/montserrat/700.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import EnquiryPanel from '../components/EnquiryPanel.astro';
+import Intro from '../components/Intro.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  page?: 'home' | 'models' | 'days' | 'projects';
+}
+const { title, description = 'Cave Co. builds prefab farmhouses in 90 days. Pick a model, fix the price, get the keys.', page } = Astro.props;
+const fullTitle = title ? `${title} — Cave Co.` : 'Cave Co. — Your farmhouse in ninety days';
+const clouds = [
+  { top: '6%', left: '-8%', w: '52vw', o: 0.9, t: '110s', depth: 0.6 },
+  { top: '22%', left: '58%', w: '40vw', o: 0.75, t: '80s', depth: 1.2 },
+  { top: '48%', left: '8%', w: '36vw', o: 0.6, t: '95s', depth: 0.9 },
+  { top: '66%', left: '62%', w: '56vw', o: 0.85, t: '120s', depth: 1.5 },
+  { top: '88%', left: '-12%', w: '48vw', o: 0.7, t: '100s', depth: 1.1 },
+];
+---
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#9fc2e4" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/media/ig/orion-ext-6.webp" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body data-page={page}>
+    <div class="sky" aria-hidden="true">
+      <div class="sky-deep"></div>
+      {clouds.map((c) => (
+        <div class="cloud" data-depth={c.depth} style={`top:${c.top};left:${c.left};--w:${c.w};--o:${c.o};--t:${c.t}`}></div>
+      ))}
+    </div>
+    <Intro />
+    <Header page={page} />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+    <EnquiryPanel />
+    <script>
+      import '../scripts/motion';
+    </script>
+  </body>
+</html>

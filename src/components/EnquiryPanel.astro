@@ -1,0 +1,147 @@
+---
+import { models } from '../data/models';
+import { site, waLink } from '../data/site';
+---
+<div class="enq" data-enq aria-hidden="true">
+  <div class="scrim" data-enq-close></div>
+  <aside class="panel" role="dialog" aria-modal="true" aria-labelledby="enq-title" data-lenis-prevent>
+    <button class="x" data-enq-close aria-label="Close">×</button>
+
+    <div class="body" data-enq-form-wrap>
+      <h2 id="enq-title" class="h-section"><span>Tell us</span><span>about your land.</span></h2>
+      <p class="intro">We reply within a day, usually on WhatsApp.</p>
+
+      <form class="form" data-enq-form novalidate>
+        <label class="f"><span>Name</span><input name="name" autocomplete="name" required /></label>
+        <label class="f"><span>Phone</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" required pattern="[0-9+\s\-]{10,15}" /></label>
+        <label class="f"><span>Where is the land?</span><input name="location" placeholder="Village or town, district" required /></label>
+        <div class="row">
+          <label class="f"><span>Plot size</span>
+            <select name="plot">
+              <option value="">Select</option>
+              <option>Under 1 acre</option><option>1–3 acres</option><option>3–10 acres</option><option>10+ acres</option><option>No land yet</option>
+            </select>
+          </label>
+          <label class="f"><span>Budget</span>
+            <select name="budget">
+              <option value="">Select</option>
+              <option>Under ₹30 L</option><option>₹30–60 L</option><option>₹60 L–1 Cr</option><option>Above ₹1 Cr</option>
+            </select>
+          </label>
+        </div>
+        <fieldset class="chips">
+          <legend>Model</legend>
+          {models.filter((m) => m.status !== 'soon').map((m) => (
+            <label><input type="radio" name="model" value={m.name} /><span>{m.name}</span></label>
+          ))}
+          <label><input type="radio" name="model" value="Not sure" checked /><span>Not sure yet</span></label>
+        </fieldset>
+        <label class="check"><input type="checkbox" name="wa" checked /><span>Contact me on WhatsApp</span></label>
+        <p class="err" data-enq-err hidden>Please add your name, a valid phone number and where the land is.</p>
+        <button class="btn submit" type="submit">Send enquiry <span class="arrow">→</span></button>
+      </form>
+    </div>
+
+    <div class="body done" data-enq-done hidden>
+      <h2 class="h-section"><span>Thank you.</span><span>We'll call soon.</span></h2>
+      <p class="intro">Want to talk now? Message us directly.</p>
+      <a class="btn" href={waLink()} target="_blank" rel="noopener" data-enq-wa>Open WhatsApp <span class="arrow">→</span></a>
+    </div>
+
+    <div class="foot small"><span>{site.phones[0]}</span><span>Sainikpuri, Hyderabad</span></div>
+  </aside>
+</div>
+
+<style>
+  .enq { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+  .enq.open { pointer-events: auto; }
+  .scrim { position: absolute; inset: 0; background: rgba(40, 70, 100, .35); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; transition: opacity .6s var(--ease); }
+  .open .scrim { opacity: 1; }
+  .panel {
+    position: absolute; top: var(--edge); right: var(--edge); bottom: var(--edge); width: min(540px, calc(100% - 2 * var(--edge)));
+    background: var(--white); border-radius: var(--r-xl); display: flex; flex-direction: column;
+    transform: translateX(calc(100% + 40px)); transition: transform .8s var(--ease);
+    overflow-y: auto; overscroll-behavior: contain;
+  }
+  .open .panel { transform: none; }
+  .x { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 12px; font-size: 28px; line-height: 1; background: var(--sky-tint); transition: border-radius .4s var(--ease), background-color .3s, color .3s; }
+  .x:hover { border-radius: 999px; background: var(--red); color: var(--white); }
+  .body { padding: 56px var(--pad) 28px; flex: 1; }
+  .body .h-section { font-size: clamp(32px, 4vw, 46px); }
+  .intro { color: var(--grey); margin: 14px 0 28px; }
+  .form { display: grid; gap: 18px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .f { display: grid; gap: 6px; font-size: 13px; color: var(--grey); }
+  .f input, .f select {
+    font: inherit; font-size: 16px; color: var(--ink); height: 48px; padding: 0 14px;
+    background: var(--sky-tint); border: 1px solid transparent; border-radius: var(--r-md);
+    outline: none; transition: border-color .3s, background-color .3s; appearance: none; -webkit-appearance: none;
+  }
+  .f select { background: var(--sky-tint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='%230b0b0c'/%3E%3C/svg%3E") right 14px center no-repeat; }
+  .f input:focus, .f select:focus { border-color: var(--ink); background-color: var(--white); }
+  .f input.bad { border-color: var(--red); }
+  .chips { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips legend { font-size: 13px; color: var(--grey); margin-bottom: 8px; }
+  .chips label input { position: absolute; opacity: 0; }
+  .chips label span { display: inline-block; padding: 9px 14px; border-radius: var(--r-md); background: var(--sky-tint); font-size: 14px; cursor: pointer; transition: all .35s var(--ease); }
+  .chips label span:hover { border-radius: 999px; }
+  .chips label input:checked + span { background: var(--ink); color: var(--white); }
+  .chips label input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .check { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+  .check input { accent-color: var(--ink); width: 18px; height: 18px; }
+  .err { color: var(--red); font-size: 14px; margin: 0; }
+  .submit { justify-self: start; margin-top: 4px; }
+  .foot { display: flex; justify-content: space-between; padding: 18px var(--pad); border-top: 1px solid var(--line); }
+</style>
+
+<script>
+  import { lockScroll } from '../scripts/motion';
+  import { site, waLink } from '../data/site';
+
+  const root = document.querySelector<HTMLElement>('[data-enq]')!;
+  const form = root.querySelector<HTMLFormElement>('[data-enq-form]')!;
+  const err = root.querySelector<HTMLElement>('[data-enq-err]')!;
+  let lastFocus: HTMLElement | null = null;
+
+  const open = (model?: string) => {
+    lastFocus = document.activeElement as HTMLElement;
+    if (model) {
+      const r = form.querySelector<HTMLInputElement>(`input[name=model][value="${model}"]`);
+      if (r) r.checked = true;
+    }
+    root.classList.add('open');
+    root.setAttribute('aria-hidden', 'false');
+    lockScroll(true);
+    setTimeout(() => form.querySelector<HTMLInputElement>('input[name=name]')?.focus(), 450);
+  };
+  const close = () => {
+    root.classList.remove('open');
+    root.setAttribute('aria-hidden', 'true');
+    lockScroll(false);
+    lastFocus?.focus();
+  };
+
+  document.addEventListener('click', (e) => {
+    const t = (e.target as HTMLElement).closest<HTMLElement>('[data-enquire]');
+    if (t) { e.preventDefault(); open(t.dataset.enquire || undefined); }
+  });
+  root.querySelectorAll('[data-enq-close]').forEach((b) => b.addEventListener('click', close));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && root.classList.contains('open')) close(); });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const req = ['name', 'phone', 'location'].map((n) => form.elements.namedItem(n) as HTMLInputElement);
+    let ok = true;
+    req.forEach((i) => { const v = i.checkValidity() && i.value.trim() !== ''; i.classList.toggle('bad', !v); if (!v) ok = false; });
+    err.hidden = ok;
+    if (!ok) return;
+    const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+    if (site.enquiryEndpoint) {
+      try { await fetch(site.enquiryEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); } catch {}
+    }
+    const msg = `Hi Cave Co, I'm ${data.name}. Land: ${data.location}${data.plot ? ` (${data.plot})` : ''}. Budget: ${data.budget || '—'}. Model: ${data.model}.`;
+    root.querySelector<HTMLAnchorElement>('[data-enq-wa]')!.href = waLink(msg);
+    root.querySelector<HTMLElement>('[data-enq-form-wrap]')!.hidden = true;
+    root.querySelector<HTMLElement>('[data-enq-done]')!.hidden = false;
+  });
+</script>

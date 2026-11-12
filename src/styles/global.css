@@ -1,0 +1,145 @@
+/* =========================================================
+   Cave Co. — sky + islands
+   Black and white, with sky blue for the backdrop and soft surfaces.
+   Red appears only on hover.
+   ========================================================= */
+:root {
+  --ink: #0b0b0c;
+  --white: #ffffff;
+  --grey: #5f6670;
+  --line: rgba(11, 11, 12, 0.1);
+
+  --sky-top: #9fc2e4;
+  --sky-mid: #c7ddf1;
+  --sky-low: #eaf3fb;
+  --sky-tint: #e6f0f9;   /* soft surfaces on white islands */
+  --sky-deep: #3f6f9f;   /* blueprint panel */
+  --red: #e2412b;        /* hover only */
+
+  --sans: 'Hanken Grotesk Variable', system-ui, sans-serif;
+  --mono: 'Geist Mono Variable', ui-monospace, monospace;
+  --logo: 'Montserrat', var(--sans);
+
+  --r-xl: clamp(24px, 2.6vw, 36px);  /* islands */
+  --r-lg: clamp(18px, 2vw, 26px);    /* photos, cards */
+  --r-md: 14px;                      /* buttons, chips */
+
+  --edge: clamp(10px, 1.4vw, 20px);  /* sky visible around islands */
+  --gap: clamp(10px, 1.2vw, 16px);   /* sky between islands */
+  --pad: clamp(20px, 3.6vw, 56px);   /* inside islands */
+  --header-h: 60px;
+  --header-top: 12px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Animatable colour used by blended sections (the tour takes its photo's colour) */
+@property --tour-c { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+body {
+  margin: 0;
+  background: var(--sky-mid);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, video { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+::selection { background: var(--ink); color: var(--white); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+main { padding-top: calc(var(--header-top) + var(--header-h) + var(--gap)); }
+
+/* ---------- Sky backdrop ---------- */
+.sky { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 52%, var(--sky-low) 100%); }
+.sky-deep { position: absolute; inset: 0; opacity: 0;
+  background: linear-gradient(180deg, #4d7fb2 0%, #86afd6 55%, #bfd6ec 100%); }
+.cloud { position: absolute; width: var(--w, 46vw); aspect-ratio: 3 / 1; opacity: var(--o, .9);
+  background:
+    radial-gradient(closest-side at 30% 60%, rgba(255,255,255,.95), rgba(255,255,255,0)),
+    radial-gradient(closest-side at 55% 40%, rgba(255,255,255,.9), rgba(255,255,255,0)),
+    radial-gradient(closest-side at 75% 62%, rgba(255,255,255,.85), rgba(255,255,255,0));
+  animation: cloud-drift var(--t, 90s) linear infinite alternate; }
+@keyframes cloud-drift { from { translate: -6vw 0; } to { translate: 6vw 0; } }
+
+/* ---------- Islands ---------- */
+.island {
+  position: relative;
+  margin: 0 var(--edge) var(--gap);
+  padding: var(--pad);
+  background: var(--white);
+  border-radius: var(--r-xl);
+}
+.island.tint { background: var(--sky-tint); }
+.island.dark { background: var(--ink); color: var(--white); }
+.island.glass { background: rgba(255, 255, 255, .62); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); }
+.island.bleed { padding: 0; overflow: hidden; }
+.open-sky { padding: clamp(32px, 6vw, 88px) calc(var(--edge) + var(--pad)) clamp(28px, 4vw, 56px); }
+
+/* ---------- Type ---------- */
+.h-display, .h-section {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+}
+.h-display { font-size: clamp(44px, 7.6vw, 120px); }
+.h-section { font-size: clamp(32px, 4.4vw, 64px); }
+.h-display span, .h-section span { display: block; }
+.lede { font-size: clamp(17px, 1.35vw, 20px); color: var(--grey); max-width: 38ch; margin: 0; line-height: 1.45; }
+.dark .lede { color: rgba(255,255,255,.7); }
+.small { font-size: 14px; color: var(--grey); }
+.dark .small { color: rgba(255,255,255,.6); }
+
+.sec-head { display: grid; gap: 20px; align-items: end; margin-bottom: clamp(28px, 3.6vw, 52px); }
+@media (min-width: 900px) { .sec-head { grid-template-columns: 1.3fr 1fr; gap: 48px; } }
+.sec-head .side { display: grid; gap: 18px; justify-items: start; }
+
+/* ---------- Buttons ---------- */
+/* White by default; on hover they turn red and round into a pill. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: 48px; padding: 0 22px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--ink);
+  background: var(--white); color: var(--ink);
+  font-size: 15px; font-weight: 500; white-space: nowrap;
+  transition: background-color .45s var(--ease), color .45s var(--ease), border-color .45s var(--ease), border-radius .55s var(--ease);
+}
+.btn:hover, .btn:focus-visible { background: var(--red); border-color: var(--red); color: var(--white); border-radius: 999px; }
+.btn .arrow { transition: transform .5s var(--ease); }
+.btn:hover .arrow { transform: translateX(4px); }
+.dark .btn, .on-photo .btn { border-color: var(--white); }
+.btn-sm { height: 40px; padding: 0 16px; font-size: 14px; }
+
+.link { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; transition: color .3s var(--ease); }
+.link .arrow { transition: transform .5s var(--ease); }
+.link:hover { color: var(--red); }
+.link:hover .arrow { transform: translateX(5px); }
+
+.chip { padding: 10px 16px; border-radius: var(--r-md); background: var(--sky-tint); font-size: 14px; transition: background-color .35s var(--ease), color .35s var(--ease), border-radius .45s var(--ease); }
+.chip:hover { border-radius: 999px; }
+.chip.on { background: var(--ink); color: var(--white); }
+
+/* ---------- Media ---------- */
+.frame { position: relative; overflow: hidden; border-radius: var(--r-lg); background: var(--sky-tint); }
+.frame img, .frame video { width: 100%; height: 100%; object-fit: cover; }
+.ph { display: grid; place-items: center; background: linear-gradient(160deg, var(--sky-tint), var(--sky-mid)); }
+
+/* ---------- Page transitions (cross-document, progressive) ---------- */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .5s; animation-timing-function: var(--ease); }
+
+/* ---------- Motion helpers ---------- */
+[data-reveal] { opacity: 0; transform: translateY(14px); }
+.no-js [data-reveal] { opacity: 1; transform: none; }
+.drift img { animation: drift 22s var(--ease) infinite alternate; }
+@keyframes drift { from { transform: scale(1.02); } to { transform: scale(1.1) translate(-1%, -1%); } }

@@ -1,0 +1,54 @@
+---
+interface Props { items: { q: string; a: string | string[] }[]; id?: string; }
+const { items, id = 'acc' } = Astro.props;
+---
+<div class="acc" data-acc>
+  {items.map((it, i) => (
+    <div class="item">
+      <h3 class="q-wrap">
+        <button class="q" aria-expanded="false" aria-controls={`${id}-${i}`} id={`${id}-b-${i}`}>
+          <span>{it.q}</span>
+          <span class="pm" aria-hidden="true"></span>
+        </button>
+      </h3>
+      <div class="a" id={`${id}-${i}`} role="region" aria-labelledby={`${id}-b-${i}`}>
+        <div class="a-in">
+          {Array.isArray(it.a) ? <ul>{it.a.map((x) => <li>{x}</li>)}</ul> : <p>{it.a}</p>}
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+<style>
+  .acc { display: grid; gap: 8px; }
+  .item { background: var(--sky-tint); border-radius: var(--r-md); transition: background-color .4s var(--ease); }
+  .item.open { background: var(--white); box-shadow: 0 0 0 1px var(--line) inset; }
+  .q-wrap { margin: 0; font: inherit; }
+  .q { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 20px; text-align: left; font-size: 17px; font-weight: 500; }
+  .pm { position: relative; width: 14px; height: 14px; flex: none; }
+  .pm::before, .pm::after { content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 1.5px; background: currentColor; transition: transform .5s var(--ease); }
+  .pm::after { transform: rotate(90deg); }
+  .q[aria-expanded='true'] .pm::after { transform: rotate(0deg); }
+  .a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s var(--ease); }
+  .a-in { overflow: hidden; }
+  .a-in p, .a-in ul { margin: 0 20px 20px; color: var(--grey); max-width: 60ch; }
+  .a-in ul { padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .a-in li { padding: 6px 0; }
+  @media (max-width: 600px) { .a-in ul { grid-template-columns: 1fr; } }
+  .open .a { grid-template-rows: 1fr; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-acc]').forEach((acc) => {
+    acc.querySelectorAll<HTMLButtonElement>('.q').forEach((b) =>
+      b.addEventListener('click', () => {
+        const item = b.closest('.item')!;
+        const open = !item.classList.contains('open');
+        item.classList.toggle('open', open);
+        b.setAttribute('aria-expanded', String(open));
+        setTimeout(() => (window as any).ScrollTriggerRefresh?.(), 600);
+      }),
+    );
+  });
+</script>

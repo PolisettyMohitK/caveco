@@ -1,0 +1,40 @@
+---
+import { specLine, type Model } from '../data/models';
+interface Props { m: Model; }
+const { m } = Astro.props;
+const soon = m.status === 'soon';
+const Tag = soon ? 'div' : 'a';
+---
+<Tag class:list={['card', { soon }]} href={soon ? undefined : `/models/${m.slug}`}>
+  <div class="frame media">
+    {m.cover
+      ? <img src={m.cover} alt={`${m.name}, ${m.kind}`} loading="lazy" draggable="false" style={m.coverStyle} />
+      : <div class="ph soon-art" aria-hidden="true"><span>Coming soon</span></div>}
+    <span class="tag">{m.status === 'built' ? 'Built' : m.status === 'render' ? 'New' : 'Soon'}</span>
+  </div>
+  <div class="info">
+    <div class="row">
+      <h3 class="name">{m.name}</h3>
+      {!soon && <span class="go" aria-hidden="true">→</span>}
+    </div>
+    <p class="kind">{m.kind}</p>
+    <p class="small">{specLine(m)}{m.price ? ` · from ${m.price}` : ''}</p>
+  </div>
+</Tag>
+
+<style>
+  .card { display: block; flex: 0 0 auto; width: min(80vw, 400px); scroll-snap-align: start; user-select: none; }
+  .media { aspect-ratio: 4 / 5; }
+  .media img { transition: transform 1.2s var(--ease); }
+  .card:hover .media img { transform: scale(1.04); }
+  .tag { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,.85); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 500; }
+  .soon-art { position: absolute; inset: 0; }
+  .soon-art span { font-size: 15px; color: var(--grey); }
+  .info { padding: 16px 4px 0; }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  .name { margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -0.03em; }
+  .go { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: var(--sky-tint); transition: background-color .35s, color .35s, border-radius .45s var(--ease), transform .45s var(--ease); }
+  .card:hover .go { background: var(--red); color: var(--white); border-radius: 999px; transform: translateX(3px); }
+  .kind { margin: 4px 0 2px; }
+  .small { margin: 0; }
+</style>

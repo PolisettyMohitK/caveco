@@ -1,0 +1,504 @@
+---
+import Base from '../layouts/Base.astro';
+import ModelCard from '../components/ModelCard.astro';
+import { models } from '../data/models';
+import { site, waLink } from '../data/site';
+
+const film = site.heroFilm;
+const rooms = [
+  { name: 'Living', note: 'Soft light, low seating, a wall of glass to the garden.', src: '/media/ig/orion-int-3.webp' },
+  { name: 'Bedroom', note: 'Linen, timber and a slatted headboard. Nothing loud.', src: '/media/ig/orion-int-10.webp' },
+  { name: 'Study', note: 'A desk by the window, tucked between plants and curtains.', src: '/media/ig/orion-int-2.webp' },
+  { name: 'Dining', note: 'Seats eight, and opens straight onto the courtyard.', src: '/media/ig/orion-int-7.webp' },
+  { name: 'Bath', note: 'A skylight overhead and a garden window by the shower.', src: '/media/ig/orion-int-5.webp' },
+];
+const milestones = [
+  { d: 0, t: 'First call' },
+  { d: 11, t: 'Design and fixed price' },
+  { d: 36, t: 'Made in our factory' },
+  { d: 90, t: 'Keys in hand' },
+];
+const uses = [
+  { t: 'A weekend home', d: 'An hour from the city. Somewhere to slow down.', icon: 'sun' },
+  { t: 'A farm-stay that earns', d: 'Rent it out when you’re not there.', icon: 'stay' },
+  { t: 'Both', d: 'Most owners do both, so we plan the layout for it.', icon: 'both' },
+];
+---
+<Base page="home">
+  <!-- Hero: open sky, then a window opens onto Orion -->
+  <section class="hero" id="hero">
+    <div class="hero-sticky">
+      <div class="hero-media" data-opening="scrub" data-trigger="#hero"
+        data-from="inset(54% 42% 9% 24% round 26px)" data-to="inset(14px 14px 14px 14px round 32px)"
+        data-from-mobile="inset(36% 6% 22% 6% round 20px)" data-to-mobile="inset(10px 10px 10px 10px round 24px)">
+        <img src="/media/ig/orion-ext-6.webp" alt="Orion farmhouse by Cave Co. at dusk, with pool and lit glass rooms" fetchpriority="high" />
+      </div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <h1 class="h-display hero-h"><span>Your farmhouse.</span><span>Ninety days.</span></h1>
+      </div>
+      <p class="hero-cap small">Orion, Chilkur — handed over November 2026</p>
+
+      <div class="hero-panel">
+        <button class="film" data-film aria-label={`${film.title}: go to the room tour`}>
+          {film.src
+            ? <video src={film.src} poster={film.frames[0]} autoplay muted loop playsinline></video>
+            : film.frames.map((f, i) => <img src={f} alt="" class:list={{ on: i === 0 }} data-frame loading={i ? 'lazy' : 'eager'} />)}
+          <span class="film-shade" aria-hidden="true"></span>
+          <span class="film-play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" /></svg>
+          </span>
+          <span class="film-t">{film.title}</span>
+          <span class="film-bar" aria-hidden="true"><i data-film-bar></i></span>
+        </button>
+        <div class="hero-cta">
+          <a href="/models" class="btn">See models <span class="arrow">→</span></a>
+          <button class="btn" data-enquire>Book a visit <span class="arrow">→</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Facts + lineup on one island -->
+  <section class="island lineup">
+    <div class="facts">
+      <div class="fact" data-reveal>
+        <span class="num" data-count="90">90</span>
+        <p>days from first call to keys in hand.</p>
+      </div>
+      <div class="fact" data-reveal data-delay=".08">
+        <span class="num" data-count="1">1</span>
+        <p>fixed price, agreed before we start.</p>
+      </div>
+      <div class="fact" data-reveal data-delay=".16">
+        <span class="num" data-count="0">0</span>
+        <p>contractors for you to chase.</p>
+      </div>
+    </div>
+    <div class="sec-head">
+      <h2 class="h-section" data-reveal><span>Pick a model,</span><span>not a contractor.</span></h2>
+      <div class="side" data-reveal data-delay=".08">
+        <p class="lede">Every Cave home starts as a model you can see and price. Then we fit it to your land.</p>
+        <a href="/models" class="link">All models <span class="arrow">→</span></a>
+      </div>
+    </div>
+    <div class="track" data-drag>
+      {models.map((m) => <ModelCard m={m} />)}
+    </div>
+  </section>
+
+  <!-- Tour, days and land share one surface: colours blend from one into the next -->
+  <div class="blend" data-blend data-nospring>
+    <section class="island tour" data-tour>
+      <div class="tour-grid">
+        <div class="tour-left">
+          <h2 class="h-section" data-reveal><span>Built in a factory.</span><span>Feels like a home.</span></h2>
+          <div class="tour-bottom">
+            <ol class="tour-list" role="tablist" aria-label="Rooms in Orion">
+              {rooms.map((r, i) => (
+                <li>
+                  <button role="tab" class:list={['room', { on: i === 0 }]} data-room={i} aria-selected={i === 0 ? 'true' : 'false'}>
+                    <span class="idx">{String(i + 1).padStart(2, '0')}</span>{r.name}
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <div class="tour-notes">
+              {rooms.map((r, i) => <p class:list={['note', { on: i === 0 }]} data-room-note={i}>{r.note}</p>)}
+            </div>
+            <a href="/projects#orion-chilkur" class="link tour-link">Read the Orion story <span class="arrow">→</span></a>
+          </div>
+        </div>
+        <div class="frame stage">
+          {rooms.map((r, i) => (
+            <img src={r.src} alt={`${r.name} in Orion`} class:list={{ on: i === 0 }} data-room-img={i} loading={i ? 'lazy' : 'eager'} />
+          ))}
+          <div class="stage-tabs" role="tablist" aria-label="Rooms in Orion">
+            {rooms.map((r, i) => (
+              <button role="tab" class:list={['stab', { on: i === 0 }]} data-room={i} aria-selected={i === 0 ? 'true' : 'false'}>{r.name}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="island dark days" data-days>
+      <div class="days-grid">
+        <div class="big">
+          <span class="day-l">Day</span>
+          <span class="day-n" data-count="90" data-pad="2">90</span>
+        </div>
+        <div class="days-copy">
+          <h2 class="h-section"><span>Two jobs</span><span>at the same time.</span></h2>
+          <p class="lede">Panels are made in our factory while the foundation goes in on your land. That’s how ninety days works.</p>
+          <a href="/90-days" class="btn">See every step <span class="arrow">→</span></a>
+        </div>
+      </div>
+      <div class="line">
+        <div class="line-track"><div class="line-fill" data-line></div></div>
+        <ol class="stops">
+          {milestones.map((m) => (
+            <li><span class="sd">Day {String(m.d).padStart(2, '0')}</span><span>{m.t}</span></li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section class="island land">
+      <div class="land-copy">
+        <div class="land-head">
+          <h2 class="h-section" data-reveal><span>Land shouldn’t</span><span>just sit there.</span></h2>
+          <p class="lede" data-reveal data-delay=".08">A Cave home turns a plot you visit twice a year into somewhere you use every month.</p>
+        </div>
+        <ol class="uses" data-uses>
+          {uses.map((u, i) => (
+            <li class="use" data-use>
+              <svg class:list={['ico', `ico-${u.icon}`]} viewBox="0 0 48 48" aria-hidden="true">
+                {u.icon === 'sun' && <>
+                  <path pathLength="1" d="M4 34h40" />
+                  <path pathLength="1" d="M13 34a11 11 0 0 1 22 0" />
+                  <g class="rays">
+                    <path pathLength="1" d="M24 16v-6" /><path pathLength="1" d="M11.3 21.3l-4.2-4.2" /><path pathLength="1" d="M36.7 21.3l4.2-4.2" />
+                  </g>
+                </>}
+                {u.icon === 'stay' && <>
+                  <path pathLength="1" d="M8 40V22L24 10l16 12v18z" />
+                  <path pathLength="1" d="M20 40v-9h8v9" />
+                  <circle class="coin" pathLength="1" cx="38" cy="9" r="4" />
+                </>}
+                {u.icon === 'both' && <>
+                  <circle class="ring-a" pathLength="1" cx="18" cy="24" r="11" />
+                  <circle class="ring-b" pathLength="1" cx="30" cy="24" r="11" />
+                </>}
+              </svg>
+              <div class="use-t">
+                <strong>{u.t}</strong>
+                <span>{u.d}</span>
+              </div>
+              <span class="use-n">{String(i + 1).padStart(2, '0')}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div class="frame land-img" data-opening="once">
+        <img src="/media/ig/orion-ext-3.webp" alt="Orion pool deck and patio in daylight" loading="lazy" />
+      </div>
+    </section>
+  </div>
+
+  <!-- Visit -->
+  <section class="island bleed visit on-photo">
+    <div class="visit-img drift"><img src="/media/ig/hub-1.jpg" alt="The Cave Co. Experience Hub in Sainikpuri" loading="lazy" style="object-position:50% 62%" /></div>
+    <div class="visit-copy">
+      <h2 class="h-section"><span>Come and stand</span><span>inside one.</span></h2>
+      <p>Walk through a Cave home at our Experience Hub in Sainikpuri, Hyderabad. Open the doors, knock on the walls, ask anything.</p>
+      <div class="visit-cta">
+        <button class="btn" data-enquire>Book a visit <span class="arrow">→</span></button>
+        <a class="link light" href={waLink('Hi Cave Co, I would like to visit the Experience Hub.')} target="_blank" rel="noopener">WhatsApp us <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero { position: relative; height: 220vh; margin-top: calc(-1 * (var(--header-top) + var(--header-h) + var(--gap))); }
+  .hero-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+  .hero-media { position: absolute; inset: 0; clip-path: inset(54% 42% 9% 24% round 26px); will-change: clip-path; }
+  .hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 32%; }
+  .hero-shade { position: absolute; inset: 14px; border-radius: 32px; opacity: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(10,20,30,.45), rgba(10,20,30,0) 45%, rgba(10,20,30,0) 60%, rgba(10,20,30,.45)); }
+  .hero-copy { position: relative; padding: calc(var(--header-top) + var(--header-h) + clamp(28px, 6vh, 72px)) calc(var(--edge) + var(--pad)) 0; }
+  .hero-h { max-width: 11ch; }
+  .hero-cap { position: absolute; left: calc(var(--edge) + var(--pad)); bottom: calc(var(--edge) + 28px); margin: 0; color: var(--ink); opacity: .65; }
+
+  .hero-panel {
+    position: absolute; z-index: 2; right: calc(var(--edge) + var(--pad)); bottom: calc(var(--edge) + 28px);
+    width: clamp(300px, 30vw, 440px); display: grid; gap: 10px;
+  }
+  .film {
+    position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; text-align: left;
+    border-radius: var(--r-lg); background: var(--ink); color: var(--white);
+    box-shadow: 0 24px 60px rgba(10, 20, 30, .35);
+    transition: border-radius .55s var(--ease);
+  }
+  .film:hover { border-radius: 40px; }
+  .film img, .film video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .film img { opacity: 0; transition: opacity 1.2s var(--ease); }
+  .film img.on { opacity: 1; animation: ken 7s linear both; }
+  @keyframes ken { from { transform: scale(1.02); } to { transform: scale(1.12); } }
+  .film-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,14,20,.6), rgba(8,14,20,0) 55%); }
+  .film-play {
+    position: absolute; left: 14px; bottom: 14px; width: 38px; height: 38px; display: grid; place-items: center;
+    border-radius: 999px; background: var(--white); color: var(--ink); transition: background-color .35s, color .35s, transform .5s var(--ease);
+  }
+  .film:hover .film-play { background: var(--red); color: var(--white); transform: scale(1.08); }
+  .film-t { position: absolute; left: 62px; bottom: 23px; font-size: 15px; font-weight: 500; }
+  .film-bar { position: absolute; left: 14px; right: 14px; top: 14px; height: 2px; border-radius: 2px; background: rgba(255,255,255,.3); overflow: hidden; }
+  .film-bar i { position: absolute; inset: 0; background: var(--white); transform-origin: left; transform: scaleX(0); }
+  .hero-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hero-cta .btn { width: 100%; }
+
+  @media (max-width: 899px) {
+    .hero-media { clip-path: inset(36% 6% 22% 6% round 20px); }
+    .hero-media img { object-position: 42% 50%; }
+    .hero-shade { inset: 10px; border-radius: 24px; }
+    .hero-cap { display: none; }
+    .hero-panel { left: 20px; right: 20px; bottom: 20px; width: auto; }
+    .film { aspect-ratio: 16 / 9; }
+  }
+
+  /* ---------- Facts + lineup ---------- */
+  .facts { display: grid; grid-template-columns: 1fr; margin-bottom: clamp(32px, 4vw, 56px); border-bottom: 1px solid var(--line); }
+  .fact { display: grid; grid-template-columns: auto 1fr; align-items: end; gap: 18px; padding: 16px 0; border-top: 1px solid var(--line); }
+  .fact:first-child { border-top: 0; padding-top: 0; }
+  .fact .num { font-size: clamp(64px, 8vw, 120px); font-weight: 400; line-height: .8; letter-spacing: -0.06em; font-variant-numeric: tabular-nums; min-width: 1.15em; }
+  .fact p { margin: 0; color: var(--grey); font-size: clamp(14px, 1.15vw, 17px); line-height: 1.35; }
+  @media (min-width: 900px) {
+    .facts { grid-template-columns: repeat(3, 1fr); padding-bottom: clamp(28px, 3vw, 44px); }
+    .fact { padding: 0 clamp(20px, 2.4vw, 40px); border-top: 0; border-left: 1px solid var(--line); }
+    .fact:first-child { padding-left: 0; border-left: 0; }
+    .fact:last-child { padding-right: 0; }
+  }
+
+  .track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 calc(-1 * var(--pad)); padding: 0 var(--pad) 4px; scroll-padding-inline: var(--pad); scrollbar-width: none; cursor: grab; }
+  .track::-webkit-scrollbar { display: none; }
+  /* Cards grow to fill the row; with more models than fit, the row scrolls */
+  .track > :global(.card) { flex: 1 0 78vw; width: auto; max-width: 560px; }
+  @media (min-width: 700px) { .track > :global(.card) { flex-basis: clamp(260px, 28vw, 380px); } }
+  .track.dragging { cursor: grabbing; scroll-snap-type: none; }
+  .track.dragging :global(a) { pointer-events: none; }
+
+  /* ---------- Blended surface: tour → days → land ---------- */
+  .blend { --fade: clamp(110px, 14vw, 220px); margin: 0 var(--edge) var(--gap); transition: --tour-c 1.1s var(--ease); }
+  .blend .island { margin: 0; border-radius: 0; }
+  .blend .tour { border-radius: var(--r-xl) var(--r-xl) 0 0; background: var(--tour-c); }
+  .blend .days {
+    background: linear-gradient(180deg, var(--tour-c) 0, color-mix(in srgb, var(--tour-c) 45%, var(--ink)) calc(var(--fade) * .4), var(--ink) var(--fade), var(--ink) calc(100% - var(--fade)), var(--white) 100%);
+    padding-block: calc(var(--fade) * .8 + 12px) calc(var(--fade) + 12px);
+  }
+  .blend .land { border-radius: 0 0 var(--r-xl) var(--r-xl); }
+
+  /* ---------- Tour ---------- */
+  .tour-grid { display: grid; gap: 24px; }
+  .tour-left { display: flex; flex-direction: column; }
+  .tour-list { display: none; list-style: none; margin: 0; padding: 0; }
+  .room { display: flex; align-items: baseline; gap: 14px; padding: 4px 0; font-size: clamp(30px, 3.4vw, 52px); font-weight: 500; letter-spacing: -0.04em; line-height: 1.1; color: rgba(11,11,12,.24); transition: color .5s var(--ease); text-align: left; }
+  .room .idx { font-size: 13px; letter-spacing: 0; font-weight: 400; color: inherit; font-variant-numeric: tabular-nums; }
+  .room:hover { color: rgba(11,11,12,.5); }
+  .room.on { color: var(--ink); }
+  .tour-notes { display: grid; margin-top: 20px; }
+  .note { grid-area: 1 / 1; margin: 0; color: rgba(11,11,12,.65); max-width: 34ch; opacity: 0; transition: opacity .5s var(--ease); }
+  .note.on { opacity: 1; }
+  .tour-link { margin-top: 18px; }
+  .stage { aspect-ratio: 4 / 5; }
+  .stage img { position: absolute; inset: 0; opacity: 0; transition: opacity .8s var(--ease); }
+  .stage img.on { opacity: 1; }
+  .stage-tabs {
+    position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2;
+    display: flex; gap: 4px; padding: 4px; overflow-x: auto; scrollbar-width: none;
+    border-radius: 16px; background: rgba(255,255,255,.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+  .stage-tabs::-webkit-scrollbar { display: none; }
+  .stab { flex: 1 0 auto; padding: 10px 12px; border-radius: 12px; font-size: 14px; font-weight: 500; color: rgba(11,11,12,.7); transition: background-color .35s, color .35s; }
+  .stab.on { background: var(--white); color: var(--ink); }
+  @media (max-width: 899px) {
+    .tour-grid { gap: 16px; }
+    .tour-left, .tour-bottom { display: contents; }
+    .tour-left .h-section { order: 0; margin-bottom: 4px; }
+    .stage { order: 1; }
+    .tour-notes { order: 2; margin-top: 0; }
+    .tour-link { order: 3; margin-top: 0; }
+  }
+  @media (min-width: 900px) {
+    .tour { height: calc(100svh - var(--header-top) - var(--header-h) - 22px - var(--edge)); display: flex; }
+    .tour-grid { grid-template-columns: 1fr 1.05fr; gap: clamp(32px, 4vw, 64px); width: 100%; }
+    .tour-left { justify-content: space-between; min-height: 0; }
+    .tour-list { display: block; }
+    .stage { order: 0; aspect-ratio: auto; height: 100%; }
+    .stage-tabs { display: none; }
+  }
+
+  /* ---------- Days ---------- */
+  .days-grid { display: grid; gap: 28px; align-items: end; }
+  .big { display: flex; align-items: flex-start; gap: 10px; }
+  .day-l { color: rgba(255,255,255,.55); margin-top: 1.4em; }
+  .day-n { font-size: clamp(120px, 20vw, 300px); font-weight: 400; line-height: .8; letter-spacing: -0.07em; font-variant-numeric: tabular-nums; }
+  .days-copy { display: grid; gap: 18px; justify-items: start; }
+  @media (min-width: 900px) { .days-grid { grid-template-columns: 1.1fr 1fr; gap: 48px; } }
+  .line { margin-top: clamp(32px, 4vw, 56px); }
+  .line-track { height: 2px; border-radius: 2px; background: rgba(255,255,255,.18); position: relative; overflow: hidden; }
+  .line-fill { position: absolute; inset: 0; background: var(--sky-mid); transform-origin: left; transform: scaleX(0); }
+  .stops { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .stops li { display: grid; gap: 2px; font-size: 15px; }
+  .sd { color: var(--sky-mid); font-size: 13px; }
+  @media (min-width: 900px) { .stops { grid-template-columns: repeat(4, 1fr); } }
+
+  /* ---------- Land ---------- */
+  .land { display: grid; gap: 32px; }
+  .land-copy { display: flex; flex-direction: column; gap: clamp(24px, 3vw, 40px); }
+  .land-head { display: grid; gap: 18px; }
+  .uses { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; }
+  .use { flex: 1; position: relative; display: grid; grid-template-columns: 52px 1fr auto; gap: 20px; align-items: center; padding: clamp(18px, 2.2vw, 30px) 0; }
+  /* Hairline that draws itself, with a dot travelling along it */
+  .use::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: rgba(11,11,12,.16); transform: scaleX(0); transform-origin: left; transition: transform 1.1s var(--ease); }
+  .use::after { content: ''; position: absolute; top: -2.5px; left: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--sky-deep); opacity: 0; }
+  .use.in::before { transform: scaleX(1); }
+  .use.in::after { animation: travel 6s var(--ease) 1.1s infinite; }
+  .use:nth-child(2).in::after { animation-delay: 1.6s; }
+  .use:nth-child(3).in::after { animation-delay: 2.1s; }
+  @keyframes travel { 0% { left: 0; opacity: 0; } 10% { opacity: 1; } 80% { opacity: 1; } 100% { left: calc(100% - 6px); opacity: 0; } }
+  .ico { width: 52px; height: 52px; fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+  .ico :is(path, circle) { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.4s var(--ease) .3s; }
+  .use.in .ico :is(path, circle) { stroke-dashoffset: 0; }
+  .use.in .rays { transform-origin: 24px 34px; animation: rays 5s ease-in-out 1.6s infinite; }
+  @keyframes rays { 50% { transform: rotate(10deg) scale(1.08); } }
+  .use.in .coin { animation: coin 2.8s ease-in-out 1.6s infinite; }
+  @keyframes coin { 50% { transform: translateY(-4px); } }
+  .use.in .ring-a { animation: ring-a 4s ease-in-out 1.6s infinite; }
+  .use.in .ring-b { animation: ring-b 4s ease-in-out 1.6s infinite; }
+  @keyframes ring-a { 50% { transform: translateX(3px); } }
+  @keyframes ring-b { 50% { transform: translateX(-3px); } }
+  .use-t { display: grid; gap: 4px; }
+  .use-t strong { font-size: clamp(22px, 2.2vw, 32px); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; }
+  .use-t span { color: var(--grey); }
+  .use-n { align-self: center; font-size: 13px; color: var(--grey); font-variant-numeric: tabular-nums; }
+  .use .use-t, .use .use-n { opacity: 0; transform: translateY(10px); transition: opacity .8s var(--ease) .2s, transform .8s var(--ease) .2s; }
+  .use.in .use-t, .use.in .use-n { opacity: 1; transform: none; }
+  .land-img { aspect-ratio: 4 / 3; }
+  @media (min-width: 1000px) { .land { grid-template-columns: 1fr 1fr; gap: 56px; } .land-img { aspect-ratio: auto; min-height: min(78vh, 680px); } }
+
+  /* ---------- Visit ---------- */
+  .visit { min-height: min(86vh, 820px); display: flex; align-items: flex-end; color: var(--white); }
+  .visit-img { position: absolute; inset: 0; overflow: hidden; }
+  .visit-img img { width: 100%; height: 100%; object-fit: cover; }
+  .visit-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,14,20,.72), rgba(8,14,20,0) 62%); }
+  .visit-copy { position: relative; padding: var(--pad); display: grid; gap: 16px; max-width: 640px; }
+  .visit-copy p { margin: 0; color: rgba(255,255,255,.85); font-size: 18px; max-width: 42ch; }
+  .visit-cta { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+  .link.light { color: var(--white); }
+  .link.light:hover { color: var(--red); }
+</style>
+
+<script>
+  import { gsap, ScrollTrigger, scrollToEl } from '../scripts/motion';
+
+  // Hero: copy turns white once the photo covers it; the film card rises in
+  gsap.timeline({ scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom bottom', scrub: 0.6 } })
+    .to('.hero-h', { color: '#ffffff', ease: 'none', duration: 0.25 }, 0.3)
+    .to('.hero-shade', { opacity: 1, ease: 'none', duration: 0.3 }, 0.3)
+    .to('.hero-cap', { color: '#ffffff', opacity: .85, ease: 'none', duration: 0.25 }, 0.3)
+    .fromTo('.film', { opacity: 0, y: 40, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, ease: 'power2.out', duration: 0.35 }, 0.25)
+    .to({}, { duration: 0.4 });
+
+  // Film card: stills play as a slow slideshow until a real clip is added
+  const film = document.querySelector<HTMLElement>('[data-film]')!;
+  const frames = [...film.querySelectorAll<HTMLElement>('[data-frame]')];
+  const bar = film.querySelector<HTMLElement>('[data-film-bar]')!;
+  if (frames.length > 1) {
+    let f = 0;
+    const per = 6;
+    const loop = () => {
+      gsap.fromTo(bar, { scaleX: (f) / frames.length }, { scaleX: (f + 1) / frames.length, duration: per, ease: 'none', onComplete: () => {
+        frames[f].classList.remove('on');
+        f = (f + 1) % frames.length;
+        frames[f].classList.add('on');
+        loop();
+      } });
+    };
+    loop();
+  }
+  film.addEventListener('click', () => scrollToEl('[data-tour]'));
+
+  // Lineup: drag to scroll with a mouse
+  document.querySelectorAll<HTMLElement>('[data-drag]').forEach((el) => {
+    let down = false, startX = 0, startL = 0;
+    el.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      down = true; startX = e.clientX; startL = el.scrollLeft;
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 4) el.classList.add('dragging');
+      el.scrollLeft = startL - dx;
+    });
+    window.addEventListener('pointerup', () => {
+      if (!down) return;
+      down = false;
+      setTimeout(() => el.classList.remove('dragging'), 0);
+    });
+  });
+
+  // Room tour: the surface takes on the colour of the room on show.
+  const blend = document.querySelector<HTMLElement>('[data-blend]')!;
+  const tour = document.querySelector<HTMLElement>('[data-tour]')!;
+  const btns = [...tour.querySelectorAll<HTMLButtonElement>('[data-room]')];
+  const imgs = [...tour.querySelectorAll<HTMLImageElement>('[data-room-img]')];
+  const notes = [...tour.querySelectorAll<HTMLElement>('[data-room-note]')];
+  const count = imgs.length;
+  const tints: string[] = imgs.map(() => '#ffffff');
+
+  // Average colour of a photo, softened towards white so black text stays readable
+  const tintOf = (src: string) => new Promise<string>((res) => {
+    const im = new Image();
+    im.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 20;
+      const x = c.getContext('2d', { willReadFrequently: true })!;
+      x.drawImage(im, 0, 0, 20, 20);
+      const d = x.getImageData(0, 0, 20, 20).data;
+      let r = 0, g = 0, b = 0, n = 0;
+      for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; }
+      r /= n; g /= n; b /= n;
+      // Boost saturation a touch, then mix with white
+      const avg = (r + g + b) / 3;
+      [r, g, b] = [r, g, b].map((v) => avg + (v - avg) * 1.5);
+      const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      const mix = Math.min(0.85, Math.max(0.55, 0.9 - lum * 0.5));
+      const m = (v: number) => Math.round(Math.max(0, Math.min(255, v + (255 - v) * mix)));
+      res(`rgb(${m(r)}, ${m(g)}, ${m(b)})`);
+    };
+    im.onerror = () => res('#ffffff');
+    im.src = src;
+  });
+
+  let current = 0, manual = false;
+  const paint = (i: number) => blend.style.setProperty('--tour-c', tints[i]);
+  Promise.all(imgs.map((im) => tintOf(im.currentSrc || im.src))).then((t) => { t.forEach((c, i) => (tints[i] = c)); paint(current); });
+
+  const show = (i: number) => {
+    if (i === current) return;
+    current = i;
+    btns.forEach((b) => { const on = Number(b.dataset.room) === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); });
+    imgs.forEach((im, k) => im.classList.toggle('on', k === i));
+    notes.forEach((n, k) => n.classList.toggle('on', k === i));
+    paint(i);
+    const tab = tour.querySelector<HTMLElement>(`.stab[data-room="${i}"]`);
+    tab?.parentElement?.scrollTo({ left: tab.offsetLeft - 40, behavior: 'smooth' });
+  };
+  btns.forEach((b) => b.addEventListener('click', () => { manual = true; show(Number(b.dataset.room)); }));
+
+  const mm = gsap.matchMedia();
+  mm.add('(min-width: 900px)', () => {
+    const offset = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) + 22;
+    const st = ScrollTrigger.create({
+      trigger: tour, start: () => `top ${offset()}px`, end: () => `+=${window.innerHeight * (count - 1) * 0.55}`,
+      pin: true, anticipatePin: 1, invalidateOnRefresh: true,
+      onUpdate: (self) => { if (!manual) show(Math.min(count - 1, Math.floor(self.progress * count))); },
+    });
+    return () => st.kill();
+  });
+  mm.add('(max-width: 899px)', () => {
+    const id = setInterval(() => { if (!manual) show((current + 1) % count); }, 3600);
+    return () => clearInterval(id);
+  });
+
+  // 90-day line fills as you scroll past
+  gsap.to('[data-line]', { scaleX: 1, ease: 'none', scrollTrigger: { trigger: '[data-days] .line', start: 'top 85%', end: 'top 45%', scrub: 0.6 } });
+
+  // Land uses: lines draw, icons sketch themselves, one after another
+  document.querySelectorAll<HTMLElement>('[data-use]').forEach((el, i) => {
+    ScrollTrigger.create({ trigger: el, start: 'top 88%', once: true, onEnter: () => setTimeout(() => el.classList.add('in'), i * 180) });
+  });
+</script>

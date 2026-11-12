@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+import ModelCard from '../../components/ModelCard.astro';
+import Accordion from '../../components/Accordion.astro';
+import PlanMorph from '../../components/PlanMorph.astro';
+import { models, included } from '../../data/models';
+import { faq } from '../../data/content';
+---
+<Base title="Models" page="models" description="The Cave Co. range of prefab farmhouses. Pick a model and a finish; we fit it to your land.">
+  <section class="open-sky">
+    <h1 class="h-display" data-reveal><span>Choose it</span><span>like a car.</span></h1>
+    <p class="lede intro-l" data-reveal data-delay=".08">A small range of homes, each designed down to the hinge. Pick the model and the finish; we fit it to your land and fix the price.</p>
+  </section>
+
+  <section class="island grid">
+    {models.map((m) => <ModelCard m={m} />)}
+  </section>
+
+  <section class="island blueprint">
+    <PlanMorph />
+  </section>
+
+  <section class="island">
+    <div class="sec-head">
+      <h2 class="h-section" data-reveal><span>Turnkey means</span><span>nothing left to buy.</span></h2>
+      <p class="lede" data-reveal data-delay=".08">Every model comes complete. Move in with your bags.</p>
+    </div>
+    <div class="incl">
+      {included.map((g, i) => (
+        <div class="incl-col" data-reveal data-delay={String(i * 0.06)}>
+          <h3>{g.title}</h3>
+          <ul>{g.items.map((x) => <li>{x}</li>)}</ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="island faq" id="faq">
+    <div class="faq-l">
+      <h2 class="h-section" data-reveal><span>Ask us</span><span>anything.</span></h2>
+      <p class="lede">Most of these came up in our Instagram comments. If yours isn’t here, ask.</p>
+      <button class="btn" data-enquire>Ask a question <span class="arrow">→</span></button>
+    </div>
+    <Accordion items={faq} id="faq" />
+  </section>
+</Base>
+
+<style>
+  .intro-l { margin-top: 20px; }
+  .grid { display: grid; gap: 32px 16px; grid-template-columns: 1fr; }
+  .grid :global(.card) { width: 100%; }
+  @media (min-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1100px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  .blueprint { background: var(--sky-deep); color: var(--white); }
+  .incl { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .incl-col { background: var(--sky-tint); border-radius: var(--r-lg); padding: 22px; }
+  .incl-col h3 { margin: 0 0 10px; font-size: 18px; font-weight: 500; }
+  .incl-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; color: var(--grey); }
+  .faq { display: grid; gap: 32px; }
+  .faq-l { display: grid; gap: 18px; justify-items: start; align-content: start; }
+  @media (min-width: 1000px) { .faq { grid-template-columns: 1fr 1.4fr; gap: 64px; } }
+</style>

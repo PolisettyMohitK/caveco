@@ -1,0 +1,248 @@
+---
+import Base from '../layouts/Base.astro';
+import { steps, trades, quotes } from '../data/content';
+import { site, waLink, cropStyle } from '../data/site';
+const steelCrop = cropStyle(2, 0.5, 1);
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+<Base title="90 Days" page="days" description="How Cave Co. goes from first call to keys in ninety days.">
+  <section class="open-sky">
+    <h1 class="h-display" data-reveal><span>Ninety days,</span><span>call to keys.</span></h1>
+    <p class="lede intro-l" data-reveal data-delay=".08">Seven steps, one team. The factory and your site work at the same time — which is why it takes weeks, not years.</p>
+  </section>
+
+  <!-- Timeline with a sticky day counter, blending into the one-team section -->
+  <div class="blend2">
+  <section class="island tl-island">
+    <div class="tl">
+      <aside class="counter" aria-hidden="true">
+        <div class="counter-in">
+          <span class="c-l">Day</span>
+          <span class="c-n" data-counter>00</span>
+          <div class="c-bar"><div class="c-fill" data-counter-fill></div></div>
+          <span class="c-step" data-counter-step>{steps[0].title}</span>
+        </div>
+      </aside>
+      <ol class="steps">
+        {steps.map((s, i) => (
+          <li class="step" data-step data-day={s.day} data-end={s.end} data-title={s.title}>
+            <div class="step-text">
+              <span class="range">Day {pad(s.day)}{s.end !== s.day ? `–${pad(s.end)}` : ''}</span>
+              <h2 class="step-t">{s.title}</h2>
+              <p class="step-b">{s.body}</p>
+            </div>
+            <div class="frame step-img" data-opening="once">
+              <img src={s.img} alt={s.title} loading="lazy" style={s.crop ? steelCrop : s.style} />
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- One team -->
+  <section class="island team" data-team>
+    <h2 class="h-section" data-reveal><span>Twelve people to chase.</span><span>Or one.</span></h2>
+    <ul class="trades" aria-label={trades.join(', ')}>
+      {trades.map((t) => <li data-trade aria-hidden="true">{t}</li>)}
+    </ul>
+    <p class="cave-big" data-trade-final>CAVE CO.</p>
+  </section>
+  </div>
+
+  <!-- Factory + site -->
+  <section class="two">
+    <figure class="island card">
+      <div class="frame" data-opening="once"><img src="/media/ig/misc-1.webp" alt="Steel frame going up" loading="lazy" style={steelCrop} /></div>
+      <figcaption><h3>In the factory</h3><p>Steel frame and wall panels, cut and checked under one roof. Rain doesn’t stop work.</p></figcaption>
+    </figure>
+    <figure class="island card">
+      <div class="frame" data-opening="once"><img src="/media/ig/orion-ext-4.webp" alt="Finished Cave home with garden path" loading="lazy" /></div>
+      <figcaption><h3>On your land</h3><p>Foundation, plinth, water and power go in while the panels are made. Then the two meet.</p></figcaption>
+    </figure>
+  </section>
+
+  {quotes.length > 0 && (
+    <section class="island quotes" data-quotes>
+      <div class="q-stage">
+        {quotes.map((q, i) => (
+          <figure class:list={['quote', { on: i === 0 }]} data-quote={i}>
+            <blockquote>“{q.text}”</blockquote>
+            <figcaption class="small">{q.who}, {q.where}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Contact rows -->
+  <!-- Contact: floats straight on the sky -->
+  <section class="contact">
+    <h2 class="h-section" data-reveal><span>Day zero</span><span>starts with a call.</span></h2>
+    <div class="c-cards">
+      <a class="c-card" data-reveal href={`tel:${site.phones[0].replace(/\s/g, '')}`}>
+        <span class="c-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5.5 3.5h3l1.8 4.6-2.2 1.4a11 11 0 0 0 6.4 6.4l1.4-2.2 4.6 1.8v3a2 2 0 0 1-2.2 2A17 17 0 0 1 3.5 5.7a2 2 0 0 1 2-2.2z" /></svg>
+        </span>
+        <span class="c-t">Schedule a call</span>
+        <span class="c-s">{site.phones[0]}</span>
+        <span class="c-a" aria-hidden="true">→</span>
+      </a>
+      <a class="c-card" data-reveal data-delay=".08" href={waLink()} target="_blank" rel="noopener">
+        <span class="c-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z" /><path d="M9 8.2c-.4 0-.9.5-.9 1.3 0 2.2 2.7 5.6 5.9 6.3.9.2 1.6-.4 1.7-1l-.1-.6-1.6-.8-.8.8c-1-.4-2.2-1.5-2.7-2.6l.7-.8-.6-1.7-.6-.9z" /></svg>
+        </span>
+        <span class="c-t">WhatsApp us</span>
+        <span class="c-s">Chat with the team</span>
+        <span class="c-a" aria-hidden="true">→</span>
+      </a>
+      <button class="c-card" data-reveal data-delay=".16" data-enquire>
+        <span class="c-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2.5" /><path d="M9.5 4V2.8h5V4" /><path d="M8.5 10h7M8.5 13.5h7M8.5 17h4" /></svg>
+        </span>
+        <span class="c-t">Send your land details</span>
+        <span class="c-s">Location, plot size, budget</span>
+        <span class="c-a" aria-hidden="true">→</span>
+      </button>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro-l { margin-top: 20px; }
+
+  .tl { display: grid; gap: 32px; }
+  .counter { display: none; }
+  @media (min-width: 900px) {
+    .tl { grid-template-columns: 0.8fr 1.4fr; gap: 56px; }
+    .counter { display: block; }
+    .counter-in { position: sticky; top: calc(var(--header-top) + var(--header-h) + 48px); display: grid; gap: 10px; }
+  }
+  .c-l { color: var(--grey); }
+  .c-n { font-size: clamp(140px, 16vw, 260px); font-weight: 400; line-height: .8; letter-spacing: -0.07em; font-variant-numeric: tabular-nums; }
+  .c-bar { height: 4px; border-radius: 4px; background: var(--sky-tint); margin-top: 18px; max-width: 320px; overflow: hidden; }
+  .c-fill { height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); }
+  .c-step { font-weight: 500; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(40px, 6vw, 80px); }
+  .step { display: grid; gap: 18px; }
+  .range { display: inline-block; font-size: 13px; font-weight: 500; padding: 5px 12px; border-radius: 999px; background: var(--sky-tint); }
+  .step-t { margin: 14px 0 8px; font-size: clamp(30px, 3.4vw, 48px); font-weight: 500; letter-spacing: -0.04em; line-height: 1; }
+  .step-b { margin: 0; color: var(--grey); max-width: 40ch; font-size: 17px; }
+  .step-img { aspect-ratio: 3 / 2; }
+
+  /* Timeline + team share one surface that fades from white into a soft sky tint */
+  .blend2 { margin: 0 var(--edge) var(--gap); }
+  .blend2 > .island { margin: 0; }
+  .blend2 > .tl-island { border-radius: var(--r-xl) var(--r-xl) 0 0; padding-bottom: clamp(56px, 8vw, 120px); }
+  .blend2 > .team { border-radius: 0 0 var(--r-xl) var(--r-xl); background: linear-gradient(180deg, var(--white) 0, var(--sky-tint) 100%); padding-top: 0; }
+
+  /* Trades: written one by one, struck one by one, then CAVE CO. */
+  .trades { list-style: none; margin: clamp(28px, 3.6vw, 48px) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px clamp(18px, 2.4vw, 36px); font-size: clamp(22px, 2.6vw, 38px); font-weight: 500; letter-spacing: -0.03em; line-height: 1.25; }
+  .trades li { --s: 0; position: relative; color: var(--ink); }
+  .trades li::after { content: ''; position: absolute; left: -3px; right: -3px; top: 56%; height: 2px; border-radius: 2px; background: var(--ink); transform: scaleX(var(--s)); transform-origin: left; }
+  .trades :global(.ch), .cave-big :global(.ch) { display: inline-block; opacity: 0; white-space: pre; }
+  .cave-big { margin: clamp(20px, 3vw, 40px) 0 0; font-family: var(--logo); font-weight: 700; font-size: clamp(56px, 11vw, 170px); line-height: .9; letter-spacing: 0; white-space: nowrap; }
+  .no-js .trades :global(.ch), .no-js .cave-big :global(.ch) { opacity: 1; }
+
+  .two { display: grid; margin: 0 var(--edge) var(--gap); gap: var(--gap); }
+  .two .island { margin: 0; }
+  @media (min-width: 900px) { .two { grid-template-columns: 1fr 1fr; } }
+  .card { padding: 12px; }
+  .card .frame { aspect-ratio: 4 / 3; }
+  .card figcaption { padding: 18px 12px 10px; }
+  .card h3 { margin: 0; font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+  .card p { margin: 6px 0 0; color: var(--grey); max-width: 40ch; }
+
+  .q-stage { display: grid; }
+  .quote { grid-area: 1 / 1; margin: 0; opacity: 0; transition: opacity .9s var(--ease); }
+  .quote.on { opacity: 1; }
+  .quote blockquote { margin: 0; font-size: clamp(30px, 4vw, 56px); font-weight: 500; line-height: 1.1; letter-spacing: -0.03em; max-width: 24ch; }
+
+  /* Contact: no container, centred on the sky, three black cards */
+  .contact { padding: clamp(40px, 6vw, 96px) calc(var(--edge) + var(--pad)) clamp(32px, 5vw, 72px); text-align: center; }
+  .contact .h-section { margin: 0 auto; }
+  .c-cards { display: grid; gap: var(--gap); max-width: 1180px; margin: clamp(28px, 3.6vw, 48px) auto 0; }
+  @media (min-width: 900px) { .c-cards { grid-template-columns: repeat(3, 1fr); } }
+  .c-card {
+    position: relative; display: grid; justify-items: center; gap: 6px; width: 100%;
+    padding: clamp(24px, 2.6vw, 36px) 20px; border-radius: var(--r-xl); background: var(--ink); color: var(--white); text-align: center;
+    box-shadow: 0 20px 50px rgba(20, 50, 80, .18);
+    transition: background-color .45s var(--ease), border-radius .55s var(--ease), transform .55s var(--ease);
+  }
+  .c-card:hover { background: var(--red); border-radius: 56px; transform: translateY(-4px); }
+  .c-ico { width: 56px; height: 56px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 999px; background: var(--white); color: var(--ink); transition: transform .55s var(--ease); }
+  .c-card:hover .c-ico { transform: scale(1.08) rotate(-6deg); }
+  .c-ico svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .c-t { font-size: clamp(22px, 2vw, 28px); font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; }
+  .c-s { font-size: 14px; color: rgba(255,255,255,.62); }
+  .c-card:hover .c-s { color: rgba(255,255,255,.9); }
+  .c-a { margin-top: 8px; font-size: 20px; transition: transform .5s var(--ease); }
+  .c-card:hover .c-a { transform: translateX(5px); }
+  @media (max-width: 899px) {
+    .c-card { grid-template-columns: auto 1fr auto; justify-items: start; text-align: left; column-gap: 16px; row-gap: 2px; padding: 18px 20px; }
+    .c-ico { grid-row: span 2; margin: 0; width: 48px; height: 48px; }
+    .c-a { grid-row: 1 / span 2; grid-column: 3; align-self: center; margin: 0; }
+  }
+</style>
+
+<script>
+  import { gsap, ScrollTrigger } from '../scripts/motion';
+
+  // Day counter follows the step crossing the middle of the screen
+  const counter = document.querySelector<HTMLElement>('[data-counter]');
+  const fill = document.querySelector<HTMLElement>('[data-counter-fill]');
+  const label = document.querySelector<HTMLElement>('[data-counter-step]');
+  const chip = document.querySelector<HTMLElement>('[data-daychip]');
+  const pad = (n: number) => String(Math.round(n)).padStart(2, '0');
+  let shown = -1;
+  const setDay = (d: number, title?: string) => {
+    const r = Math.round(d);
+    if (r !== shown) {
+      shown = r;
+      if (counter) counter.textContent = pad(r);
+      if (chip) chip.textContent = pad(r);
+      if (fill) fill.style.transform = `scaleX(${r / 90})`;
+    }
+    if (title && label && label.textContent !== title) label.textContent = title;
+  };
+  document.querySelectorAll<HTMLElement>('[data-step]').forEach((el) => {
+    const a = Number(el.dataset.day), b = Number(el.dataset.end);
+    ScrollTrigger.create({
+      trigger: el, start: 'top 60%', end: 'bottom 60%',
+      onUpdate: (s) => setDay(a + (b - a) * s.progress, el.dataset.title),
+      onEnter: () => setDay(a, el.dataset.title),
+      onEnterBack: () => setDay(b, el.dataset.title),
+    });
+  });
+
+  // Trades: plays once when it comes into view. Each word is written letter by letter,
+  // then they are struck out one by one, and CAVE CO. is written large.
+  const items = [...document.querySelectorAll<HTMLElement>('[data-trade]')];
+  const final = document.querySelector<HTMLElement>('[data-trade-final]')!;
+  const split = (el: HTMLElement) => {
+    const t = el.textContent || '';
+    el.textContent = '';
+    return [...t].map((ch) => { const s = document.createElement('span'); s.className = 'ch'; s.textContent = ch; el.appendChild(s); return s; });
+  };
+  const words = items.map(split);
+  const big = split(final);
+  const write = (chars: HTMLElement[], each = 0.035) =>
+    gsap.fromTo(chars, { opacity: 0, y: 8, filter: 'blur(3px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.18, stagger: each, ease: 'power2.out' });
+  const tl = gsap.timeline({ paused: true });
+  words.forEach((w, k) => tl.add(write(w), k * 0.2));
+  tl.addLabel('strike', '+=0.35');
+  items.forEach((it, k) => {
+    tl.to(it, { '--s': 1, duration: 0.3, ease: 'power2.inOut' }, `strike+=${k * 0.12}`)
+      .to(it, { color: 'rgba(11,11,12,.28)', duration: 0.3 }, `strike+=${k * 0.12 + 0.15}`);
+  });
+  tl.add(write(big, 0.07), '+=0.2');
+  ScrollTrigger.create({ trigger: '[data-team]', start: 'top 70%', once: true, onEnter: () => tl.play() });
+
+  // Quotes rotate (only rendered once real quotes exist)
+  const qs = [...document.querySelectorAll<HTMLElement>('[data-quote]')];
+  if (qs.length > 1) {
+    let qi = 0;
+    setInterval(() => { qi = (qi + 1) % qs.length; qs.forEach((q, k) => q.classList.toggle('on', k === qi)); }, 7000);
+  }
+</script>

@@ -1,0 +1,119 @@
+---
+import { site, waLink } from '../data/site';
+---
+<!-- The footer is open sky, like the Instagram profile picture: white CAVE CO. among clouds. -->
+<footer class="footer">
+  <div class="f-sky" aria-hidden="true">
+    <span class="f-cloud c1"></span>
+    <span class="f-cloud c2"></span>
+    <span class="f-cloud c3"></span>
+  </div>
+
+  <div class="top">
+    <div class="col">
+      <h3>Visit</h3>
+      <p>Experience Hub<br /><span class="dim">Sainikpuri, Hyderabad</span></p>
+      <p>Studio<br /><span class="dim">Visakhapatnam</span></p>
+    </div>
+    <div class="col">
+      <h3>Talk</h3>
+      {site.phones.map((p) => <a href={`tel:${p.replace(/\s/g, '')}`}>{p}</a>)}
+      <a href={waLink()} target="_blank" rel="noopener">WhatsApp</a>
+      <a href={site.instagram} target="_blank" rel="noopener">Instagram</a>
+    </div>
+    <div class="col">
+      <h3>Explore</h3>
+      <a href="/models">Models</a>
+      <a href="/90-days">90 Days</a>
+      <a href="/projects">Projects</a>
+      <a href="/models#faq">Questions</a>
+    </div>
+    <form class="col news" data-news>
+      <h3>Letters</h3>
+      <p class="dim">New homes and open-house dates, once a month.</p>
+      <div class="field">
+        <input type="email" required placeholder="Your email" aria-label="Email address" />
+        <button type="submit" class="btn btn-sm">Join</button>
+      </div>
+      <p class="ok dim" hidden>Thanks — you're on the list.</p>
+    </form>
+  </div>
+
+  <div class="mark" data-footmark>
+    <span class="word" aria-label="Cave Co.">CAVE CO.</span>
+    <span class="f-cloud c4" aria-hidden="true"></span>
+  </div>
+
+  <div class="meta">
+    <span>© {new Date().getFullYear()} Cave Company</span>
+    <span>Designed, made and installed in India</span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    position: relative; overflow: hidden; isolation: isolate; color: var(--white);
+    padding: clamp(72px, 9vw, 140px) calc(var(--edge) + var(--pad)) calc(var(--edge) + 18px);
+    /* Starts clear so it melts into the page sky, then deepens into the profile-picture blue */
+    background: linear-gradient(180deg, rgba(95, 145, 196, 0) 0, rgba(95, 145, 196, .85) clamp(72px, 9vw, 140px), #5b8fc4 55%, #6d9fd1 100%);
+  }
+  .f-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .f-cloud {
+    position: absolute; display: block; aspect-ratio: 3 / 1; pointer-events: none;
+    background:
+      radial-gradient(closest-side at 30% 60%, rgba(255,255,255,.9), rgba(255,255,255,0)),
+      radial-gradient(closest-side at 55% 40%, rgba(255,255,255,.85), rgba(255,255,255,0)),
+      radial-gradient(closest-side at 75% 62%, rgba(255,255,255,.8), rgba(255,255,255,0));
+    animation: f-drift var(--t, 60s) linear infinite alternate;
+  }
+  .c1 { width: 46vw; left: -10%; top: 30%; opacity: .45; --t: 70s; }
+  .c2 { width: 38vw; right: -8%; top: 18%; opacity: .5; --t: 55s; }
+  .c3 { width: 60vw; left: 20%; bottom: -6%; opacity: .55; --t: 80s; }
+  @keyframes f-drift { from { translate: -4vw 0; } to { translate: 4vw 0; } }
+
+  .top { position: relative; display: grid; gap: 36px; grid-template-columns: 1fr 1fr; text-shadow: 0 1px 12px rgba(30, 60, 100, .15); }
+  .col { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; font-size: 15px; }
+  .col h3 { margin: 0 0 6px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,.72); }
+  .col p { margin: 0; }
+  .col a { color: var(--white); transition: color .3s; }
+  .col a:hover { color: var(--ink); }
+  .dim { color: rgba(255,255,255,.78); }
+  .news { grid-column: 1 / -1; }
+  .field { display: flex; gap: 8px; width: 100%; max-width: 380px; margin-top: 6px; }
+  .field input { flex: 1; min-width: 0; height: 40px; padding: 0 16px; border-radius: var(--r-md); border: 1px solid rgba(255,255,255,.55); background: rgba(255,255,255,.16); color: var(--white); font: inherit; outline: none; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: border-color .3s, background-color .3s; }
+  .field input:focus { border-color: var(--white); background: rgba(255,255,255,.24); }
+  .field input::placeholder { color: rgba(255,255,255,.8); }
+  .field .btn { border-color: var(--white); }
+
+  /* Big wordmark, centred, with a cloud passing in front like the profile picture */
+  .mark { position: relative; display: grid; place-items: center; margin-top: clamp(48px, 7vw, 110px); }
+  .word {
+    font-family: var(--logo); font-weight: 700; line-height: .9; white-space: nowrap; letter-spacing: 0.01em;
+    font-size: min(15.5vw, 250px); color: var(--white);
+    text-shadow: 0 6px 40px rgba(40, 80, 130, .25);
+  }
+  .c4 { width: 70%; left: 50%; bottom: -30%; translate: -50% 0; opacity: .7; animation: none; }
+  .meta { position: relative; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: clamp(16px, 2vw, 28px); font-size: 13px; color: rgba(255,255,255,.8); }
+
+  @media (min-width: 900px) {
+    .top { grid-template-columns: repeat(3, 1fr) 1.4fr; }
+    .news { grid-column: auto; }
+  }
+</style>
+
+<script>
+  import { gsap } from '../scripts/motion';
+  // Wordmark rises out of the clouds as the footer comes into view
+  gsap.fromTo('[data-footmark] .word', { y: 60, opacity: 0, letterSpacing: '0.12em' }, {
+    y: 0, opacity: 1, letterSpacing: '0.01em', ease: 'power2.out',
+    scrollTrigger: { trigger: '[data-footmark]', start: 'top bottom', end: 'bottom bottom', scrub: 0.8 },
+  });
+
+  document.querySelectorAll<HTMLFormElement>('[data-news]').forEach((f) =>
+    f.addEventListener('submit', (e) => {
+      e.preventDefault(); // TODO(client): connect newsletter provider
+      f.querySelector<HTMLElement>('.field')!.hidden = true;
+      f.querySelector<HTMLElement>('.ok')!.hidden = false;
+    }),
+  );
+</script>

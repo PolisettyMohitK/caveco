@@ -1,0 +1,300 @@
+---
+import Base from '../../layouts/Base.astro';
+import Logo from '../../components/Logo.astro';
+import { projects, type Piece } from '../../data/projects';
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const today = new Date();
+const years = [...new Set(projects.map((p) => Number(p.date.slice(0, 4))))].sort((a, b) => b - a);
+const byMonth = (y: number, m: number) => projects.filter((p) => p.date.startsWith(`${y}-${String(m + 1).padStart(2, '0')}`));
+const fmtDay = (d: string) => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+const fmtMonth = (d: string) => new Date(d).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+const sorted = [...projects].sort((a, b) => b.date.localeCompare(a.date));
+// The current month gets the "yours next" slot
+const nextSlot = { y: today.getFullYear(), m: today.getMonth() };
+// Fold runs of empty months into one thin row so the log stays tight.
+type Seg = { kind: 'month'; m: number; items: typeof projects; next: boolean } | { kind: 'gap'; from: number; to: number; future: boolean };
+const segments = (y: number): Seg[] => {
+  const out: Seg[] = [];
+  for (let m = 0; m < 12; m++) {
+    const items = byMonth(y, m);
+    const next = y === nextSlot.y && m === nextSlot.m;
+    const future = y > today.getFullYear() || (y === today.getFullYear() && m > today.getMonth());
+    if (items.length || next) { out.push({ kind: 'month', m, items, next }); continue; }
+    const last = out[out.length - 1];
+    if (last && last.kind === 'gap' && last.future === future) last.to = m;
+    else out.push({ kind: 'gap', from: m, to: m, future });
+  }
+  return out;
+};
+const short = (m: number) => MONTHS[m].slice(0, 3);
+const span: Record<Piece['size'], string> = { full: 's6', 'two-thirds': 's4', half: 's3', third: 's2' };
+---
+<Base title="Projects" page="projects" description="Every Cave Co. home and milestone, logged month by month.">
+  <section class="open-sky">
+    <h1 class="h-display" data-reveal><span>Every home,</span><span>logged.</span></h1>
+    <p class="lede intro-l" data-reveal data-delay=".08">Each entry is an issue of our letters. Open one to read the story of the build.</p>
+  </section>
+
+  {years.map((y) => (
+    <section class="island cal">
+      <div class="cal-head">
+        <h2 class="year">{y}</h2>
+        <p class="small">{projects.filter((p) => p.date.startsWith(String(y))).length} entries</p>
+      </div>
+      <ol class="log">
+        {segments(y).map((s) => s.kind === 'gap' ? (
+          <li class:list={['row gap', { future: s.future }]}>
+            <span class="m-name">{s.from === s.to ? MONTHS[s.from] : `${short(s.from)} – ${short(s.to)}`}</span>
+            <span class="gap-line" aria-hidden="true"></span>
+          </li>
+        ) : (
+          <li class="row has">
+            <span class="m-name">{MONTHS[s.m]}</span>
+            <div class="entries">
+              {s.items.map((p) => (
+                <button class="entry" data-open={p.slug}>
+                  <div class="frame e-img"><img src={p.cover} alt="" loading="lazy" style={p.coverStyle} /></div>
+                  <div class="e-info">
+                    <span class="e-kind">{p.kind} · {fmtDay(p.date)}</span>
+                    <strong class="e-name">{p.name}</strong>
+                    <span class="small">{p.place}</span>
+                    <p class="e-sum">{p.summary}</p>
+                  </div>
+                  <span class="e-go" aria-hidden="true">→</span>
+                </button>
+              ))}
+              {s.next && (
+                <button class="entry slot" data-enquire>
+                  <div class="e-info">
+                    <strong class="e-name">Your home could be next.</strong>
+                    <span class="small">Ninety days from a first call.</span>
+                  </div>
+                  <span class="e-go" aria-hidden="true">→</span>
+                </button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  ))}
+
+  <!-- Issue viewer: opens like a document on top of the sky -->
+  <div class="viewer" data-viewer aria-hidden="true">
+    <div class="v-scrim" data-close></div>
+    <div class="v-bar">
+      <span class="v-title" data-v-title></span>
+      <div class="v-actions">
+        <button class="v-btn" data-prev aria-label="Previous issue">←</button>
+        <button class="v-btn" data-next aria-label="Next issue">→</button>
+        <button class="v-btn" data-close aria-label="Close">×</button>
+      </div>
+    </div>
+    <div class="v-scroll" data-v-scroll data-lenis-prevent>
+      {sorted.map((p) => (
+        <article class="sheet" data-issue={p.slug} data-label={`Cave Co. Letters · Issue ${String(p.issue).padStart(2, '0')} · ${p.name}`} hidden>
+          <header class="mast">
+            <span>Issue {String(p.issue).padStart(2, '0')}</span>
+            <span class="mast-logo"><Logo /> <em>Letters</em></span>
+            <span>{fmtMonth(p.date)}</span>
+          </header>
+          <p class="kicker">{p.kind} — {p.place}</p>
+
+          <div class="collage">
+            {p.pieces.map((pc, i) => {
+              const cls = ['pc', span[pc.size], `k-${pc.kind}`];
+              if (pc.kind === 'photo') return (
+                <figure class:list={[...cls, { tall: pc.tall }]}>
+                  <div class="frame"><img src={pc.src} alt={pc.caption ?? ''} loading="lazy" style={pc.style} /></div>
+                  {pc.caption && <figcaption>{pc.caption}</figcaption>}
+                </figure>
+              );
+              if (pc.kind === 'film') return (
+                <figure class:list={[...cls, { tall: pc.tall }]}>
+                  <div class="frame drift">
+                    {pc.src
+                      ? <video src={pc.src} poster={pc.poster} autoplay muted loop playsinline></video>
+                      : <img src={pc.poster} alt={pc.caption ?? ''} loading="lazy" />}
+                  </div>
+                  {pc.caption && <figcaption>{pc.caption}</figcaption>}
+                </figure>
+              );
+              if (pc.kind === 'headline') return <h2 class:list={cls}>{pc.text}</h2>;
+              if (pc.kind === 'tagline') return <p class:list={cls}>{pc.text}</p>;
+              if (pc.kind === 'text') return (
+                <div class:list={[...cls, { cols: pc.columns }]}>
+                  {pc.title && <h3>{pc.title}</h3>}
+                  {pc.body.map((t) => <p>{t}</p>)}
+                </div>
+              );
+              if (pc.kind === 'quote') return (
+                <blockquote class:list={cls}><p>“{pc.text}”</p><cite>{pc.who}</cite></blockquote>
+              );
+              if (pc.kind === 'facts') return (
+                <dl class:list={cls}>{pc.items.map((f) => <div><dt>{f.k}</dt><dd>{f.v}</dd></div>)}</dl>
+              );
+              return null;
+            })}
+          </div>
+
+          <footer class="sheet-foot">
+            <button class="btn" data-enquire>Build one like this <span class="arrow">→</span></button>
+            {sorted.length > 1 && <button class="link" data-next>Next issue <span class="arrow">→</span></button>}
+          </footer>
+        </article>
+      ))}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .intro-l { margin-top: 20px; }
+
+  /* Calendar log */
+  .cal-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
+  .year { margin: 0; font-size: clamp(56px, 8vw, 120px); font-weight: 400; letter-spacing: -0.06em; line-height: .85; }
+  /* Each month is a row: label on the left, top-aligned with its first entry. Hairlines between rows. */
+  .log { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line); }
+  .row { display: grid; gap: 10px; align-items: start; border-bottom: 1px solid var(--line); }
+  @media (min-width: 900px) { .row { grid-template-columns: 180px 1fr; gap: 24px; } }
+  .m-name { font-size: 14px; color: var(--grey); line-height: 1.4; }
+  .has .m-name { color: var(--ink); font-weight: 500; font-size: 16px; }
+  .gap { padding: 14px 0; align-items: center; }
+  .gap-line { display: none; height: 1px; }
+  @media (min-width: 900px) { .gap-line { display: block; } }
+  .gap.future .gap-line { background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px); }
+  .has { padding: 18px 0; }
+  .entries { display: grid; gap: 10px; }
+
+  .entry { position: relative; display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: start; width: 100%; text-align: left; padding: 0; border-radius: var(--r-lg); transition: background-color .4s var(--ease), box-shadow .4s var(--ease); }
+  .entry:hover { background: var(--sky-tint); box-shadow: 0 0 0 10px var(--sky-tint); }
+  .e-img { aspect-ratio: 1; border-radius: 14px; }
+  .e-info { display: grid; gap: 2px; padding: 2px 52px 2px 0; align-self: center; }
+  .e-kind { font-size: 12px; color: var(--grey); }
+  .e-name { font-size: 22px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; }
+  .e-sum { display: none; margin: 8px 0 0; color: var(--grey); max-width: 52ch; }
+  .e-go { position: absolute; right: 12px; top: 50%; translate: 0 -50%; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; background: var(--sky-tint); transition: background-color .35s, color .35s, border-radius .45s var(--ease); }
+  .entry:hover .e-go { background: var(--red); color: var(--white); border-radius: 999px; }
+  .slot { grid-template-columns: 1fr; padding: 16px 18px; border: 1px dashed rgba(11,11,12,.35); }
+  .slot:hover { border-color: transparent; }
+  @media (min-width: 900px) {
+    .entry { grid-template-columns: 240px 1fr; gap: 24px; }
+    .e-img { aspect-ratio: 3 / 2; }
+    .e-name { font-size: 30px; }
+    .e-sum { display: block; }
+    .slot { grid-template-columns: 1fr; padding: 20px 24px; }
+  }
+
+  /* Viewer */
+  .viewer { position: fixed; inset: 0; z-index: 90; pointer-events: none; visibility: hidden; }
+  .viewer.open { pointer-events: auto; visibility: visible; }
+  .v-scrim { position: absolute; inset: 0; background: rgba(60, 100, 140, .35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); opacity: 0; }
+  .v-bar {
+    position: absolute; z-index: 2; top: var(--edge); left: 50%; translate: -50% 0; width: min(1080px, calc(100% - 2 * var(--edge)));
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 8px 8px 20px;
+    border-radius: 18px; background: rgba(11,11,12,.86); color: var(--white); backdrop-filter: blur(12px); opacity: 0;
+  }
+  .v-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .v-actions { display: flex; gap: 6px; }
+  .v-btn { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.1); font-size: 18px; transition: background-color .3s, border-radius .45s var(--ease); }
+  .v-btn:hover { background: var(--red); border-radius: 999px; }
+  .v-scroll { position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; padding: calc(var(--edge) + 72px) var(--edge) 48px; }
+
+  /* The sheet: a newsletter page */
+  .sheet { max-width: 1080px; margin: 0 auto; background: var(--white); border-radius: var(--r-lg); padding: clamp(20px, 4vw, 56px); box-shadow: 0 30px 80px rgba(20, 50, 80, .25); }
+  .mast { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 3px double var(--ink); font-size: 13px; }
+  .mast > span:last-child { text-align: right; }
+  .mast-logo { display: inline-flex; align-items: baseline; gap: 8px; }
+  .mast-logo :global(.logo) { font-size: clamp(20px, 3vw, 32px); }
+  .mast-logo em { font-style: normal; font-size: clamp(16px, 2.2vw, 24px); font-weight: 500; letter-spacing: -0.02em; }
+  .kicker { margin: 14px 0 clamp(20px, 3vw, 36px); font-size: 14px; color: var(--grey); }
+
+  .collage { display: grid; grid-template-columns: repeat(6, 1fr); gap: clamp(14px, 2vw, 28px); align-items: start; }
+  .pc { grid-column: span 6; margin: 0; }
+  @media (min-width: 760px) {
+    .s4 { grid-column: span 4; } .s3 { grid-column: span 3; } .s2 { grid-column: span 2; }
+  }
+  .k-photo .frame, .k-film .frame { aspect-ratio: 3 / 2; border-radius: 14px; }
+  .s6.k-photo .frame, .s6.k-film .frame { aspect-ratio: 16 / 8; }
+  .tall .frame { aspect-ratio: 3 / 4 !important; }
+  figcaption { margin-top: 8px; font-size: 13px; color: var(--grey); }
+  .k-headline { font-size: clamp(32px, 4.6vw, 64px); font-weight: 500; letter-spacing: -0.045em; line-height: 1; margin: 0; }
+  .k-tagline { margin: 0; padding-top: 14px; border-top: 1px solid var(--ink); font-size: clamp(20px, 2.2vw, 28px); line-height: 1.2; letter-spacing: -0.02em; }
+  .k-text h3 { margin: 0 0 10px; font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+  .k-text p { margin: 0 0 12px; color: #2b2f35; line-height: 1.6; }
+  .k-text.cols { columns: 2; column-gap: 28px; }
+  .collage > .k-text:first-of-type p:first-of-type::first-letter { float: left; font-size: 3.4em; line-height: .9; font-weight: 500; margin: 4px 8px 0 0; }
+  .k-quote { margin: 0; padding: clamp(20px, 3vw, 40px) 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); text-align: center; }
+  .k-quote p { margin: 0 auto; max-width: 22ch; font-size: clamp(28px, 4vw, 52px); font-weight: 500; letter-spacing: -0.04em; line-height: 1.05; }
+  .k-quote cite { display: block; margin-top: 14px; font-style: normal; font-size: 13px; color: var(--grey); }
+  .k-facts { margin: 0; padding: 18px; border-radius: 14px; background: var(--sky-tint); display: grid; gap: 12px; }
+  .k-facts dt { font-size: 12px; color: var(--grey); }
+  .k-facts dd { margin: 0; font-weight: 500; }
+  .sheet-foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: clamp(28px, 4vw, 48px); padding-top: 20px; border-top: 3px double var(--ink); }
+</style>
+
+<script>
+  import { gsap, lockScroll } from '../../scripts/motion';
+
+  const viewer = document.querySelector<HTMLElement>('[data-viewer]')!;
+  const scroller = viewer.querySelector<HTMLElement>('[data-v-scroll]')!;
+  const title = viewer.querySelector<HTMLElement>('[data-v-title]')!;
+  const sheets = [...viewer.querySelectorAll<HTMLElement>('[data-issue]')];
+  let current = -1;
+
+  const reveal = (sheet: HTMLElement) => {
+    gsap.fromTo(sheet, { y: 70, scale: 0.96, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.9, ease: 'power3.out' });
+    gsap.fromTo(sheet.querySelectorAll('.mast, .kicker, .pc, .sheet-foot'),
+      { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out', stagger: 0.06, delay: 0.25 });
+    gsap.fromTo(sheet.querySelectorAll('.pc .frame img'), { scale: 1.12 }, { scale: 1, duration: 1.4, ease: 'power3.out', stagger: 0.06, delay: 0.25 });
+  };
+
+  const show = (i: number) => {
+    current = (i + sheets.length) % sheets.length;
+    sheets.forEach((s, k) => (s.hidden = k !== current));
+    const s = sheets[current];
+    title.textContent = s.dataset.label || '';
+    scroller.scrollTop = 0;
+    history.replaceState(null, '', `#${s.dataset.issue}`);
+    reveal(s);
+  };
+
+  const open = (slug: string) => {
+    const i = sheets.findIndex((s) => s.dataset.issue === slug);
+    if (i < 0) return;
+    viewer.classList.add('open');
+    viewer.setAttribute('aria-hidden', 'false');
+    lockScroll(true);
+    gsap.to(viewer.querySelectorAll('.v-scrim, .v-bar'), { opacity: 1, duration: 0.5, ease: 'power2.out' });
+    show(i);
+  };
+
+  const close = () => {
+    gsap.to(sheets[current], { y: 60, opacity: 0, duration: 0.45, ease: 'power2.in' });
+    gsap.to(viewer.querySelectorAll('.v-scrim, .v-bar'), {
+      opacity: 0, duration: 0.45, delay: 0.1, ease: 'power2.in',
+      onComplete: () => {
+        viewer.classList.remove('open');
+        viewer.setAttribute('aria-hidden', 'true');
+        lockScroll(false);
+      },
+    });
+    history.replaceState(null, '', location.pathname);
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-open]').forEach((b) => b.addEventListener('click', () => open(b.dataset.open!)));
+  viewer.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+  viewer.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', () => show(current + 1)));
+  viewer.querySelectorAll('[data-prev]').forEach((b) => b.addEventListener('click', () => show(current - 1)));
+  viewer.querySelectorAll('.sheet [data-enquire]').forEach((b) => b.addEventListener('click', close));
+  document.addEventListener('keydown', (e) => {
+    if (!viewer.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') show(current + 1);
+    if (e.key === 'ArrowLeft') show(current - 1);
+  });
+
+  // Deep link: /projects#orion-chilkur opens that issue
+  if (location.hash.length > 1) setTimeout(() => open(location.hash.slice(1)), 300);
+</script>

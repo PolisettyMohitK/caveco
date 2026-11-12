@@ -1,0 +1,110 @@
+---
+// Animated illustration: a sprawling conventional plan sheds rooms and walls and settles
+// into the compact Cave Co. layout, then loops. Rects are [x, y, w, h] in a 240 x 150 box.
+// Layouts are indicative, not real drawings. TODO(client): swap B for a real plan.
+interface Props { title?: string; }
+const { title = 'Less house. More home.' } = Astro.props;
+
+type R = [number, number, number, number];
+const big: { a: R; b: R; label: string; keep?: string }[] = [
+  { a: [10, 10, 70, 50], b: [70, 38, 62, 46], label: 'Formal living', keep: 'Living + kitchen' },
+  { a: [80, 10, 60, 50], b: [101, 61, 0, 0], label: 'Family lounge' },
+  { a: [140, 10, 45, 50], b: [101, 61, 0, 0], label: 'Dining' },
+  { a: [185, 10, 45, 40], b: [151, 58, 0, 0], label: 'Kitchen' },
+  { a: [185, 50, 45, 25], b: [151, 58, 0, 0], label: 'Store' },
+  { a: [10, 60, 50, 45], b: [70, 84, 62, 28], label: 'Guest suite', keep: 'Deck' },
+  { a: [60, 60, 125, 15], b: [101, 61, 0, 0], label: 'Corridor' },
+  { a: [185, 75, 45, 65], b: [132, 38, 40, 44], label: 'Master suite', keep: 'Bedroom' },
+  { a: [60, 75, 50, 65], b: [101, 98, 0, 0], label: 'Bedroom 2' },
+  { a: [110, 75, 40, 65], b: [101, 98, 0, 0], label: 'Bedroom 3' },
+  { a: [150, 75, 35, 35], b: [151, 96, 0, 0], label: 'Study' },
+  { a: [150, 110, 35, 30], b: [132, 82, 40, 30], label: 'Utility', keep: 'Bath' },
+  { a: [10, 105, 50, 35], b: [101, 98, 0, 0], label: 'Garage' },
+];
+const outline = { a: [10, 10, 220, 130] as R, b: [70, 38, 102, 74] as R };
+// Extra detail that only the big house has: stairs, doors, columns.
+const details = [
+  ...Array.from({ length: 7 }, (_, i) => `M${64 + i * 6} 62 V73`),
+  'M80 30 h0', 'M30 60 a10 10 0 0 1 10 -10', 'M120 75 a8 8 0 0 0 -8 8', 'M200 75 a9 9 0 0 1 9 9',
+  'M18 118 h34', 'M18 126 h34', 'M18 134 h34',
+];
+---
+<div class="pm" data-plan-morph>
+  <div class="pm-head">
+    <h2 class="h-section"><span>{title}</span></h2>
+    <div class="captions" aria-live="polite">
+      <p class="cap on" data-cap="a">A typical farmhouse: more rooms, more corridors, more months.</p>
+      <p class="cap" data-cap="b">A Cave home: only the rooms you use, built in ninety days.</p>
+    </div>
+  </div>
+
+  <svg viewBox="0 0 240 150" class="svg" role="img" aria-label="A large house plan simplifying into a compact Cave Co. plan">
+    <defs>
+      <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M10 0H0V10" fill="none" stroke="rgba(255,255,255,.08)" stroke-width=".4" />
+      </pattern>
+    </defs>
+    <rect width="240" height="150" fill="url(#grid)" />
+    <g class="details" data-details>
+      {details.map((d) => <path d={d} />)}
+    </g>
+    {big.map((r) => (
+      <rect class="room" x={r.a[0]} y={r.a[1]} width={r.a[2]} height={r.a[3]}
+        data-a={r.a.join(',')} data-b={r.b.join(',')} data-keep={r.keep ? '1' : ''} />
+    ))}
+    <rect class="outline" x={outline.a[0]} y={outline.a[1]} width={outline.a[2]} height={outline.a[3]}
+      data-a={outline.a.join(',')} data-b={outline.b.join(',')} />
+    <g class="labels-a" data-labels-a>
+      {big.map((r) => <text x={r.a[0] + 3} y={r.a[1] + 7}>{r.label}</text>)}
+    </g>
+    <g class="labels-b" data-labels-b>
+      {big.filter((r) => r.keep).map((r) => <text x={r.b[0] + 4} y={r.b[1] + 10}>{r.keep}</text>)}
+    </g>
+  </svg>
+</div>
+
+<style>
+  .pm { color: var(--white); }
+  .pm-head { display: grid; gap: 16px; margin-bottom: clamp(20px, 3vw, 40px); }
+  @media (min-width: 900px) { .pm-head { grid-template-columns: 1.2fr 1fr; align-items: end; gap: 48px; } }
+  .captions { display: grid; }
+  .cap { grid-area: 1 / 1; margin: 0; color: rgba(255,255,255,.8); font-size: 18px; max-width: 34ch; opacity: 0; transform: translateY(8px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+  .cap.on { opacity: 1; transform: none; }
+  .svg { width: 100%; height: auto; max-height: min(64vh, 600px); display: block; margin: 0 auto; }
+  .room { fill: rgba(255,255,255,0); stroke: rgba(255,255,255,.75); stroke-width: .6; }
+  .outline { fill: none; stroke: var(--white); stroke-width: 1.6; stroke-linejoin: round; }
+  .details path { fill: none; stroke: rgba(255,255,255,.55); stroke-width: .5; }
+  .labels-a text { fill: rgba(255,255,255,.7); font-family: var(--sans); font-size: 4.2px; }
+  .labels-b text { fill: var(--white); font-family: var(--sans); font-size: 6.4px; font-weight: 500; opacity: 0; }
+</style>
+
+<script>
+  import { gsap } from '../scripts/motion';
+
+  document.querySelectorAll<HTMLElement>('[data-plan-morph]').forEach((root) => {
+    const parse = (s: string) => s.split(',').map(Number);
+    const caps = root.querySelectorAll<HTMLElement>('[data-cap]');
+    const setCap = (k: 'a' | 'b') => caps.forEach((c) => c.classList.toggle('on', c.dataset.cap === k));
+
+    const tl = gsap.timeline({ paused: true, repeat: -1, yoyo: true, repeatDelay: 1.4, defaults: { ease: 'power2.inOut' } });
+    tl.to({}, { duration: 1 }); // hold the big plan
+    tl.to(root.querySelector('[data-details]'), { opacity: 0, duration: 0.8 }, '>');
+    tl.to(root.querySelector('[data-labels-a]'), { opacity: 0, duration: 0.6 }, '<');
+    tl.addLabel('morph', '>-0.2');
+
+    root.querySelectorAll<SVGRectElement>('[data-a]').forEach((r) => {
+      const [x, y, width, height] = parse(r.dataset.b!);
+      const vanish = !r.dataset.keep && !r.classList.contains('outline');
+      tl.to(r, { attr: { x, y, width, height }, opacity: vanish ? 0 : 1, duration: 2.6, ease: 'power3.inOut' }, 'morph');
+    });
+    tl.to(root.querySelector('[data-labels-b]')!.children, { opacity: 1, duration: 0.6, stagger: 0.12 }, '>-0.2');
+    tl.to({}, { duration: 1.8 }); // hold the Cave plan
+
+    // Captions follow the direction of play
+    tl.eventCallback('onUpdate', () => setCap(tl.progress() > 0.3 ? 'b' : 'a'));
+
+    // Only run while on screen
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? tl.play() : tl.pause()), { threshold: 0.3 });
+    io.observe(root);
+  });
+</script>

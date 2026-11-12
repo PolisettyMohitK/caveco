@@ -1,0 +1,107 @@
+---
+// "Through the clouds" intro: sky, clouds part, the white CAVE CO. wordmark appears
+// (like the Instagram profile picture), then glides into the header logo spot.
+// Plays once per browser session. Any tap, scroll or key skips to the end.
+---
+<script is:inline>
+  // Runs before first paint so the page never flashes before the intro.
+  try {
+    if (!sessionStorage.getItem('cave-intro')) document.documentElement.classList.add('intro-on');
+  } catch (e) {}
+</script>
+
+<div class="intro" data-intro aria-hidden="true">
+  <div class="i-sky" data-i-sky></div>
+  <div class="i-cloud left" data-i-cloud="-1"></div>
+  <div class="i-cloud right" data-i-cloud="1"></div>
+  <div class="i-cloud low" data-i-cloud="0"></div>
+  <span class="i-word" data-i-word>CAVE CO.</span>
+</div>
+
+<style is:global>
+  .intro { display: none; }
+  html.intro-on .intro { display: block; position: fixed; inset: 0; z-index: 200; overflow: hidden; }
+  html.intro-on .header .bar { opacity: 0; }
+  html.intro-on .header .home .logo { opacity: 0; }
+  html.intro-on main > :first-child { opacity: 0; }
+
+  .i-sky { position: absolute; inset: 0; background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-low) 100%); }
+  .i-cloud {
+    position: absolute; top: 50%; width: 80vw; aspect-ratio: 3 / 1.3; translate: -50% -50%;
+    background:
+      radial-gradient(closest-side at 30% 55%, rgba(255,255,255,.98), rgba(255,255,255,0)),
+      radial-gradient(closest-side at 55% 40%, rgba(255,255,255,.95), rgba(255,255,255,0)),
+      radial-gradient(closest-side at 75% 60%, rgba(255,255,255,.92), rgba(255,255,255,0));
+  }
+  .i-cloud.left { left: 38%; }
+  .i-cloud.right { left: 62%; top: 46%; }
+  .i-cloud.low { left: 50%; top: 62%; width: 70vw; opacity: .8; }
+  .i-word {
+    position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+    font-family: var(--logo); font-weight: 700; letter-spacing: 0.02em; line-height: 1; white-space: nowrap;
+    font-size: clamp(52px, 13vw, 190px); color: #fff;
+    text-shadow: 0 2px 30px rgba(60, 100, 140, .18);
+    opacity: 0; will-change: transform, opacity;
+  }
+</style>
+
+<script>
+  import { gsap, lockScroll } from '../scripts/motion';
+
+  const html = document.documentElement;
+  if (html.classList.contains('intro-on')) {
+    const intro = document.querySelector<HTMLElement>('[data-intro]')!;
+    const word = intro.querySelector<HTMLElement>('[data-i-word]')!;
+    const sky = intro.querySelector<HTMLElement>('[data-i-sky]')!;
+    const clouds = [...intro.querySelectorAll<HTMLElement>('[data-i-cloud]')];
+    const bar = document.querySelector<HTMLElement>('.header .bar')!;
+    const target = document.querySelector<HTMLElement>('.header .home .logo')!;
+    const first = document.querySelector<HTMLElement>('main > :first-child');
+
+    lockScroll(true);
+
+    // Where the wordmark has to land: the header logo's box.
+    const flight = () => {
+      const a = word.getBoundingClientRect();
+      const b = target.getBoundingClientRect();
+      return {
+        x: b.left + b.width / 2 - (a.left + a.width / 2),
+        y: b.top + b.height / 2 - (a.top + a.height / 2),
+        scale: b.width / a.width,
+      };
+    };
+
+    const finish = () => {
+      try { sessionStorage.setItem('cave-intro', '1'); } catch (e) {}
+      html.classList.remove('intro-on');
+      gsap.set([bar, target, first], { clearProps: 'opacity' });
+      intro.remove();
+      lockScroll(false);
+      (window as any).ScrollTriggerRefresh?.();
+    };
+
+    const tl = gsap.timeline({ delay: 0.15, onComplete: finish });
+    // 1. Clouds part, the wordmark surfaces
+    tl.to(clouds, { x: (i, el) => Number(el.dataset.iCloud) * window.innerWidth * 0.55, y: (i, el) => (el.dataset.iCloud === '0' ? window.innerHeight * 0.35 : 0), opacity: 0.55, duration: 1.3, ease: 'power3.inOut' }, 0)
+      .fromTo(word, { opacity: 0, y: 24, letterSpacing: '0.18em' }, { opacity: 1, y: 0, letterSpacing: '0.02em', duration: 1.1, ease: 'power3.out' }, 0.25)
+      // 2. A beat, then it flies into the header and turns black
+      .addLabel('fly', '+=0.25')
+      .to(word, {
+        // Measured at the moment the flight starts, so it lands on the real header logo
+        x: () => flight().x, y: () => flight().y, scale: () => flight().scale,
+        color: '#0b0b0c', textShadow: '0 0 0 rgba(0,0,0,0)', duration: 0.95, ease: 'power3.inOut',
+      }, 'fly')
+      .to(sky, { opacity: 0, duration: 0.8, ease: 'power2.inOut' }, 'fly+=0.15')
+      .to(clouds, { opacity: 0, duration: 0.7, ease: 'power2.out' }, 'fly+=0.1')
+      // 3. The header island forms around it, the page rises in
+      .fromTo(bar, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 'fly+=0.55')
+      .fromTo(first, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 'fly+=0.6')
+      .set(target, { opacity: 1 }, 'fly+=0.95')
+      .set(word, { opacity: 0 }, 'fly+=0.96');
+
+    // Skip on any interaction
+    const skip = () => { if (tl.progress() < 1) tl.progress(1); };
+    (window as any).__introTl = tl; // handy for reviewing frame by frame in devtools
+    ['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach((ev) => window.addEventListener(ev, skip, { once: true, passive: true }));
+  }
+</script>
