@@ -1,0 +1,131 @@
+---
+// Page transition: clouds rise and cover the screen, the page switches underneath,
+// then the clouds drift apart on the new page. Same family as the intro.
+const puffs = [
+  { x: 8, y: 78, w: 95, d: -1 },
+  { x: 62, y: 84, w: 105, d: 1 },
+  { x: 30, y: 52, w: 90, d: -1 },
+  { x: 78, y: 44, w: 85, d: 1 },
+  { x: 12, y: 22, w: 80, d: -1 },
+  { x: 58, y: 14, w: 95, d: 1 },
+  { x: 40, y: 34, w: 70, d: 0 },
+];
+---
+<script is:inline>
+  // Before first paint: if we arrived through a transition, start fully covered.
+  try {
+    if (sessionStorage.getItem('cave-cover')) {
+      document.documentElement.classList.add('cc-on');
+      sessionStorage.setItem('cave-intro', '1');
+      document.documentElement.classList.remove('intro-on');
+    }
+  } catch (e) {}
+</script>
+
+<div class="cc" data-cc aria-hidden="true">
+  <div class="cc-fog" data-cc-fog></div>
+  {puffs.map((p) => (
+    <div class="cc-puff" data-cc-puff data-d={p.d} style={`left:${p.x}%;top:${p.y}%;--w:${p.w}vw`}></div>
+  ))}
+  <span class="cc-word" data-cc-word>CAVE CO.</span>
+</div>
+
+<style is:global>
+  .cc { position: fixed; inset: 0; z-index: 250; overflow: hidden; pointer-events: none; visibility: hidden; }
+  html.cc-on .cc { visibility: visible; pointer-events: auto; }
+  /* Soft-topped bank of cloud that fills the screen */
+  .cc-fog {
+    position: absolute; left: 0; right: 0; top: -30%; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.96) 22%, #f4f9fd 55%, var(--sky-low) 100%);
+  }
+  .cc-puff {
+    position: absolute; width: var(--w); aspect-ratio: 3 / 1.5; translate: -50% -50%;
+    background:
+      radial-gradient(closest-side at 30% 58%, rgba(255,255,255,1), rgba(255,255,255,0)),
+      radial-gradient(closest-side at 55% 40%, rgba(255,255,255,.97), rgba(255,255,255,0)),
+      radial-gradient(closest-side at 76% 60%, rgba(255,255,255,.95), rgba(255,255,255,0));
+    will-change: transform, opacity;
+  }
+  .cc-word {
+    position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+    font-family: var(--logo); font-weight: 700; letter-spacing: .04em; white-space: nowrap; line-height: 1;
+    font-size: clamp(22px, 3vw, 40px); color: var(--sky-top);
+    will-change: transform, opacity;
+  }
+</style>
+
+<script>
+  import { gsap, lockScroll } from '../scripts/motion';
+
+  const html = document.documentElement;
+  const cc = document.querySelector<HTMLElement>('[data-cc]')!;
+  const fog = cc.querySelector<HTMLElement>('[data-cc-fog]')!;
+  const word = cc.querySelector<HTMLElement>('[data-cc-word]')!;
+  const puffs = [...cc.querySelectorAll<HTMLElement>('[data-cc-puff]')];
+  let busy = false;
+
+  // ---- Arrive: clouds drift apart and reveal the new page ----
+  const reveal = () => {
+    try { sessionStorage.removeItem('cave-cover'); } catch (e) {}
+    lockScroll(true);
+    const vw = window.innerWidth, vh = window.innerHeight;
+    gsap.timeline({
+      delay: 0.1,
+      onComplete: () => {
+        html.classList.remove('cc-on');
+        gsap.set([fog, word, ...puffs], { clearProps: 'all' });
+        lockScroll(false);
+      },
+    })
+      .to(word, { opacity: 0, y: -16, duration: 0.4, ease: 'power2.in' }, 0)
+      .to(puffs, {
+        x: (i, el) => Number(el.dataset.d || 0) * vw * 0.7,
+        y: (i, el) => (el.dataset.d === '0' ? -vh * 0.6 : -vh * 0.18),
+        scale: 1.25, opacity: 0, duration: 1.2, ease: 'power3.inOut', stagger: 0.03,
+      }, 0.05)
+      .to(fog, { yPercent: -60, opacity: 0, duration: 1, ease: 'power2.inOut' }, 0.1);
+  };
+  if (html.classList.contains('cc-on')) reveal();
+
+  // ---- Leave: clouds rise from below and cover the screen, then navigate ----
+  const cover = (url: string) => {
+    if (busy) return;
+    busy = true;
+    const vh = window.innerHeight;
+    const pre = document.createElement('link');
+    pre.rel = 'prefetch'; pre.href = url;
+    document.head.appendChild(pre);
+    try { sessionStorage.setItem('cave-cover', '1'); } catch (e) {}
+
+    gsap.set(fog, { yPercent: 100, opacity: 1 });
+    gsap.set(puffs, { y: (i, el) => vh * (0.7 + parseFloat(el.style.top) / 100), x: 0, scale: 1, opacity: 1 });
+    gsap.set(word, { opacity: 0, y: 14 });
+    html.classList.add('cc-on');
+    lockScroll(true);
+
+    gsap.timeline({ onComplete: () => { window.location.href = url; } })
+      .to(fog, { yPercent: 0, duration: 0.85, ease: 'power3.inOut' }, 0)
+      // lower puffs lead, higher ones follow, like a bank rolling up the screen
+      .to(puffs, { y: 0, duration: 0.9, ease: 'power3.out', stagger: { each: 0.05, from: 'start' } }, 0.02)
+      .to(word, { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.55);
+  };
+
+  document.addEventListener('click', (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = (e.target as Element).closest?.('a') as HTMLAnchorElement | null;
+    if (!a || !a.href || a.target === '_blank' || a.hasAttribute('download') || a.dataset.noTransition !== undefined) return;
+    const url = new URL(a.href, location.href);
+    if (url.origin !== location.origin) return;
+    // Same page (maybe a different #section): let normal scrolling handle it
+    if (url.pathname.replace(/\/$/, '') === location.pathname.replace(/\/$/, '')) return;
+    e.preventDefault();
+    cover(url.href);
+  });
+
+  // Coming back with the browser's back button can restore the covered page from cache
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted || !html.classList.contains('cc-on')) return;
+    busy = false;
+    reveal();
+  });
+</script>

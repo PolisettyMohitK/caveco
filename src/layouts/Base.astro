@@ -7,6 +7,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import EnquiryPanel from '../components/EnquiryPanel.astro';
 import Intro from '../components/Intro.astro';
+import CloudCover from '../components/CloudCover.astro';
 
 interface Props {
   title?: string;
@@ -44,6 +45,7 @@ const clouds = [
       ))}
     </div>
     <Intro />
+    <CloudCover />
     <Header page={page} />
     <main>
       <slot />
