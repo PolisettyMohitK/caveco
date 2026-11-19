@@ -5,17 +5,13 @@ pages_build_output_dir = "dist"
 compatibility_date = "2026-11-01"
 
 # Leads database (Cloudflare D1).
-# SWITCHED OFF until the database exists. Until then the enquiry form shows a WhatsApp fallback.
-# To switch on: run the commands below, paste the id, and remove the # in front of the 5 lines.
-# Create the database and paste its id below:
-#   npx wrangler login
-#   npx wrangler d1 create caveco-leads
-#   npx wrangler d1 migrations apply caveco-leads --remote
-# [[d1_databases]]
-# binding = "LEADS"
-# database_name = "caveco-leads"
-# database_id = "00000000-0000-0000-0000-000000000000" # TODO: replace with the id from `wrangler d1 create`
-# migrations_dir = "migrations"
+# Database caveco-leads (Asia Pacific), created in the Cloudflare dashboard.
+# Schema changes: add a file to migrations/ and run  npx wrangler d1 migrations apply caveco-leads --remote
+[[d1_databases]]
+binding = "LEADS"
+database_name = "caveco-leads"
+database_id = "9a0938a9-22da-44d3-88db-0a37490020f5"
+migrations_dir = "migrations"
 
 # Secrets are NOT set here. Set them in the Cloudflare dashboard
 # (Workers & Pages → caveco → Settings → Variables and Secrets) or with
