@@ -63,10 +63,12 @@ const { title = 'A simple, beautiful process.' } = Astro.props;
 
   .ps-labels { margin-top: 16px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
   .ps-row { display: flex; align-items: baseline; gap: clamp(34px, 4vw, 64px); width: max-content; will-change: transform; }
-  .ps-lab { font-size: clamp(15px, 1.3vw, 18px); font-weight: 500; color: var(--grey); white-space: nowrap; padding: 4px 2px; transition: color .5s, opacity .5s; }
+  .ps-lab { font-size: clamp(15px, 1.3vw, 18px); font-weight: 500; color: var(--grey); white-space: nowrap; padding: 4px 2px; transition: color .45s cubic-bezier(.32,.72,0,1), font-weight .45s; }
   .ps-lab:hover { color: var(--ink); }
   .ps-lab.on { font-weight: 700; color: var(--brown); letter-spacing: -0.02em; }
-  .ps-detail { text-align: center; margin: 10px auto 0; padding-inline: var(--pad); max-width: 44ch; color: var(--grey); min-height: 3em; transition: opacity .35s; }
+  .ps-detail { text-align: center; margin: 10px auto 0; padding-inline: var(--pad); max-width: 44ch; color: var(--grey); min-height: 3em; }
+  .ps-detail.swap { animation: ps-in .5s cubic-bezier(.32,.72,0,1); }
+  @keyframes ps-in { from { opacity: 0; transform: translateY(6px); } }
 </style>
 
 <script>
@@ -82,7 +84,9 @@ const { title = 'A simple, beautiful process.' } = Astro.props;
     const track = root.querySelector<HTMLElement>('[data-ps-track]')!;
     const text: string[] = JSON.parse(root.querySelector('[data-ps-text]')!.textContent || '[]');
     const n = frames.length;
-    let pos = 0;      // 0..n-1, fractional while gliding
+    let pos = 0;      // shown position 0..n-1 (follows the scroll on a spring)
+    let target = 0;   // where the scroll says we are
+    let vel = 0, raf = 0, lastT = 0;
     let shown = -1;
 
     // measured centres (frames and labels), refreshed on resize
@@ -117,18 +121,40 @@ const { title = 'A simple, beautiful process.' } = Astro.props;
         labs.forEach((l, k) => l.classList.toggle('on', k === near));
         frames.forEach((f, k) => f.setAttribute('aria-hidden', k === near ? 'false' : 'true'));
         detail.textContent = text[near];
+        detail.classList.remove('swap'); void detail.offsetWidth; detail.classList.add('swap');
       }
       track.style.setProperty('--p', String(n > 1 ? pos / (n - 1) : 1));
       track.setAttribute('aria-valuenow', String(near + 1));
     };
+
+    // Spring between the scroll position and what's shown: soft glide, settles with a faint breath.
+    // Timed in seconds so it feels the same at 60Hz and 120Hz.
+    const W = 9, Z = 0.82; // natural frequency (rad/s), damping ratio
+    const tick = (now: number) => {
+      const dt = Math.min(0.032, (now - (lastT || now - 16)) / 1000);
+      lastT = now;
+      for (let k = 0; k < 2; k++) { const h = dt / 2; vel += (W * W * (target - pos) - 2 * Z * W * vel) * h; pos += vel * h; }
+      if (Math.abs(vel) < 0.002 && Math.abs(target - pos) < 0.0015) { pos = target; vel = 0; raf = 0; render(); return; }
+      render();
+      raf = requestAnimationFrame(tick);
+    };
+    const kick = () => { if (!raf) { lastT = 0; raf = requestAnimationFrame(tick); } };
 
     // labels scale around their centre, so give them room
     labs.forEach((l) => { l.style.transformOrigin = '50% 70%'; });
 
     const st = ScrollTrigger.create({
       trigger: root, start: 'top top', end: 'bottom bottom', invalidateOnRefresh: true,
-      onUpdate: (self) => { pos = self.progress * (n - 1); render(); },
+      onUpdate: (self) => { target = self.progress * (n - 1); kick(); },
       onRefresh: () => { measure(); render(); },
+    });
+    // when scrolling stops between two steps, glide on to the nearest one
+    ScrollTrigger.addEventListener('scrollEnd', () => {
+      if (scrubbing || down) return;
+      const y = window.scrollY;
+      if (y <= st.start + 1 || y >= st.end - 1) return;
+      const k = Math.round(target);
+      if (Math.abs(k - target) > 0.01) scrollToStep(k);
     });
 
     // jump the page to a step (the strip follows the scroll)
@@ -136,7 +162,7 @@ const { title = 'A simple, beautiful process.' } = Astro.props;
     const scrollToStep = (i: number) => {
       const k = Math.max(0, Math.min(n - 1, i));
       const y = st.start + (st.end - st.start) * (n > 1 ? k / (n - 1) : 0);
-      lenis() ? lenis().scrollTo(y, { duration: 1.2 }) : window.scrollTo({ top: y, behavior: 'smooth' });
+      lenis() ? lenis().scrollTo(y, { duration: 0.9, easing: (t: number) => 1 - Math.pow(1 - t, 3) }) : window.scrollTo({ top: y, behavior: 'smooth' });
     };
     labs.forEach((b, i) => b.addEventListener('click', () => scrollToStep(i)));
     frames.forEach((f, i) => f.addEventListener('click', () => { if (!dragged && i !== Math.round(pos)) scrollToStep(i); }));
