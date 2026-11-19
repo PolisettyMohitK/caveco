@@ -1,0 +1,270 @@
+# Cave Co. content editor (Sveltia CMS). Open https://<site>/cms
+# Saving commits to GitHub; Cloudflare Pages rebuilds the site in about a minute.
+# Every field is checked at build (src/data/*.ts). A bad edit fails the build and the live
+# site stays as it was.
+
+backend:
+  name: github
+  repo: PolisettyMohitK/caveco
+  branch: main
+  # GitHub sign-in needs a small auth worker (see CMS.md). Until then, use "Sign in with token".
+  # base_url: https://caveco-cms-auth.<your-subdomain>.workers.dev
+  commit_messages:
+    create: "Content: add {{collection}} “{{slug}}”"
+    update: "Content: update {{collection}} “{{slug}}”"
+    delete: "Content: delete {{collection}} “{{slug}}”"
+    uploadMedia: "Content: upload {{path}}"
+    deleteMedia: "Content: delete {{path}}"
+
+site_url: https://caveco.pages.dev
+display_url: https://caveco.pages.dev
+logo_url: /favicon.svg
+
+# Photos and PDFs uploaded here are resized for the web automatically at build.
+# Existing renders live in sub-folders (cottage, 1bhk, 2bhk, orion) and can be picked too.
+media_folder: public/media
+public_folder: /media
+
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  # ---------------------------------------------------------------- Models
+  - name: models
+    label: Models
+    label_singular: Model
+    description: The Cave range. Each model gets its own page at /models/<name>.
+    folder: src/content/models
+    format: json
+    extension: json
+    create: true
+    delete: true
+    identifier_field: name
+    slug: "{{name}}"
+    summary: "{{name}} · {{area}} · {{price}}"
+    sortable_fields: [order, name]
+    fields:
+      - { name: name, label: Model name, widget: string }
+      - { name: order, label: Position in lists, widget: number, value_type: int, default: 10, hint: "1 shows first." }
+      - { name: kind, label: Type, widget: string, hint: "e.g. One-bedroom villa" }
+      - { name: area, label: Area, widget: string, required: false, hint: "e.g. 600 sft. Leave empty to show “On request”." }
+      - { name: beds, label: Bedrooms, widget: string, hint: "e.g. 2 bedrooms" }
+      - { name: baths, label: Toilets, widget: number, value_type: int, min: 0 }
+      - { name: price, label: Price, widget: string, required: false, hint: "e.g. ₹ 16 Lakhs. Leave empty until the price is fixed." }
+      - { name: outdoor, label: Outdoors, widget: string, required: false, hint: "e.g. Private pool" }
+      - name: collection
+        label: Collection
+        widget: relation
+        collection: site
+        file: collections
+        value_field: "collections.*.name"
+        search_fields: ["collections.*.name"]
+        display_fields: ["collections.*.name"]
+        required: false
+      - { name: line, label: Short line (cards), widget: string, required: false }
+      - { name: blurb, label: Description, widget: text }
+      - { name: hero, label: Main photo, widget: image }
+      - { name: card, label: Card photo, widget: image }
+      - { name: brochure, label: Model brochure (PDF), widget: file, required: false, hint: "Leave empty to use the company brochure." }
+      - name: exteriors
+        label: Outside photos
+        widget: list
+        summary: "{{fields.label}}"
+        min: 1
+        fields:
+          - { name: image, label: Photo, widget: image }
+          - { name: label, label: Caption, widget: string }
+      - name: interiors
+        label: Inside photos (room tabs)
+        widget: list
+        required: false
+        summary: "{{fields.label}}"
+        fields:
+          - { name: image, label: Photo, widget: image }
+          - { name: label, label: Room name, widget: string }
+      - { name: plan, label: Floor plan drawing, widget: image }
+      - name: rooms
+        label: Floor plan rooms
+        widget: list
+        required: false
+        collapsed: true
+        summary: "{{fields.name}} {{fields.size}}"
+        hint: "The outline numbers are measured on the drawing (left, top, width, height in %). Change names and sizes freely; ask your developer before changing outlines or uploading a new plan."
+        fields:
+          - { name: name, label: Room, widget: string }
+          - { name: size, label: Size, widget: string, required: false, hint: "e.g. 10'4\" × 15'9\"" }
+          - { name: box, label: Outline (advanced), widget: list, field: { name: n, label: Value, widget: number, value_type: float } }
+
+  # ---------------------------------------------------------------- Landing page
+  - name: pages
+    label: Pages
+    files:
+      - name: home
+        label: Landing page
+        file: src/content/home.json
+        format: json
+        fields:
+          - name: hero
+            label: Hero
+            widget: object
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - { name: text, label: Text, widget: text }
+          - name: highlights
+            label: Highlights
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: image, label: Photo, widget: image }
+              - { name: title, label: Caption, widget: string }
+          - name: band
+            label: Photo band
+            widget: object
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - { name: image, label: Photo, widget: image }
+          - name: features
+            label: Take a closer look
+            widget: list
+            summary: "{{fields.name}}"
+            fields:
+              - { name: name, label: Feature, widget: string }
+              - { name: text, label: Description, widget: text }
+              - { name: image, label: Photo, widget: image }
+              - { name: x, label: Focus left–right (%), widget: number, value_type: int, min: 0, max: 100, default: 50, hint: "Where the photo zooms toward. 50 = centre." }
+              - { name: y, label: Focus top–bottom (%), widget: number, value_type: int, min: 0, max: 100, default: 50 }
+              - { name: zoom, label: Zoom, widget: number, value_type: float, min: 1, max: 1.6, step: 0.02, default: 1.1, hint: "1 = none. Keep low so photos stay sharp." }
+          - name: models
+            label: Models section
+            widget: object
+            hint: The model cards themselves come from Models.
+            fields:
+              - { name: title, label: Heading, widget: string }
+          - name: orion
+            label: Orion photos
+            widget: object
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - { name: text, label: Text, widget: text }
+              - name: photos
+                label: Photos
+                widget: list
+                summary: "{{fields.label}}"
+                fields:
+                  - { name: image, label: Photo, widget: image }
+                  - { name: label, label: Caption, widget: string }
+          - name: compare
+            label: Why choose Cave Co.
+            widget: object
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - name: rows
+                label: Rows
+                widget: list
+                summary: "{{fields.role}}"
+                fields:
+                  - { name: role, label: Role, widget: string }
+                  - { name: old, label: Traditional way, widget: string }
+                  - { name: cave, label: The Cave way, widget: string }
+                  - { name: icon, label: Icon, widget: select, options: [person, triangle, helmet, lamp], default: person }
+          - name: promises
+            label: Our conscious promise
+            widget: object
+            fields:
+              - { name: title, label: Heading, widget: string }
+              - name: items
+                label: Cards
+                widget: list
+                summary: "{{fields.bold}}"
+                fields:
+                  - { name: bold, label: Bold start, widget: string }
+                  - { name: text, label: Rest of the sentence, widget: string }
+
+  # ---------------------------------------------------------------- Shared content
+  - name: site
+    label: Site content
+    files:
+      - name: settings
+        label: Contact and brochure
+        file: src/content/settings.json
+        format: json
+        fields:
+          - { name: phones, label: Phone numbers, widget: list, field: { name: phone, label: Phone, widget: string } }
+          - { name: whatsapp, label: WhatsApp number, widget: string, hint: "Digits only with country code, e.g. 918897757221", pattern: ['^\d{10,15}$', "Digits only, with country code"] }
+          - { name: instagram, label: Instagram link, widget: string }
+          - name: hub
+            label: Experience Hub
+            widget: object
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: area, label: Area, widget: string }
+          - { name: brochure, label: Company brochure (PDF), widget: file }
+
+      - name: process
+        label: Process steps
+        file: src/content/process.json
+        format: json
+        fields:
+          - name: steps
+            label: Steps
+            widget: list
+            summary: "{{fields.name}}"
+            fields:
+              - { name: name, label: Step, widget: string }
+              - { name: text, label: Detail, widget: string }
+              - { name: image, label: Photo, widget: image }
+
+      - name: included
+        label: What is included
+        file: src/content/included.json
+        format: json
+        fields:
+          - name: groups
+            label: Groups
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: title, label: Group, widget: string }
+              - { name: items, label: Items, widget: list, field: { name: item, label: Item, widget: string } }
+
+      - name: collections
+        label: Collections
+        file: src/content/collections.json
+        format: json
+        fields:
+          - name: collections
+            label: Collections
+            widget: list
+            summary: "{{fields.name}}"
+            hint: To put a model in a collection, open the model and pick it there.
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: line, label: Short line, widget: string, required: false }
+
+      - name: addons
+        label: Add-ons (Make it yours)
+        file: src/content/addons.json
+        format: json
+        fields:
+          - name: addons
+            label: Add-ons
+            widget: list
+            summary: "{{fields.name}} {{fields.price}}"
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: price, label: Price, widget: string, required: false, hint: "e.g. ₹ 4 Lakhs. Leave empty to show a placeholder." }
+              - { name: image, label: Photo, widget: image, required: false }
+
+      - name: faq
+        label: FAQ
+        file: src/content/faq.json
+        format: json
+        fields:
+          - name: questions
+            label: Questions
+            widget: list
+            summary: "{{fields.q}}"
+            fields:
+              - { name: q, label: Question, widget: string }
+              - { name: a, label: Answer, widget: text }

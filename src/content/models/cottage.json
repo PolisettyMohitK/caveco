@@ -1,0 +1,122 @@
+{
+  "order": 1,
+  "name": "Cottage",
+  "kind": "Suite room",
+  "area": "450 sft",
+  "beds": "1 suite",
+  "baths": 1,
+  "price": "",
+  "outdoor": "Hot tub deck",
+  "collection": "",
+  "line": "A 450 sft suite with a timber porch and a hot tub deck",
+  "blurb": "A gabled suite with timber cladding, full-height glass and a raised hot tub on its own deck.",
+  "hero": "/media/cottage/ext-1-1497.webp",
+  "card": "/media/cottage/ext-1-1497.webp",
+  "brochure": "",
+  "exteriors": [
+    {
+      "image": "/media/cottage/ext-1-1497.webp",
+      "label": "Front elevation"
+    },
+    {
+      "image": "/media/cottage/ext-3-1282.webp",
+      "label": "Porch and seating deck"
+    },
+    {
+      "image": "/media/cottage/ext-4-1497.webp",
+      "label": "Side facade and deck"
+    },
+    {
+      "image": "/media/cottage/ext-2-1497.webp",
+      "label": "Side elevation"
+    },
+    {
+      "image": "/media/cottage/ext-5-1493.webp",
+      "label": "Rear, steps to the hot tub"
+    },
+    {
+      "image": "/media/cottage/ext-6-1497.webp",
+      "label": "Side elevation at sunset"
+    }
+  ],
+  "interiors": [
+    {
+      "image": "/media/cottage/int-living-1671.webp",
+      "label": "Living area"
+    },
+    {
+      "image": "/media/cottage/int-kitchenette-1673.webp",
+      "label": "Kitchenette"
+    },
+    {
+      "image": "/media/cottage/int-bedroom-1674.webp",
+      "label": "Master bedroom"
+    },
+    {
+      "image": "/media/cottage/int-bed-seating-1673.webp",
+      "label": "Bedroom and seating"
+    }
+  ],
+  "plan": "/media/cottage/plan-1411.webp",
+  "rooms": [
+    {
+      "name": "Suite",
+      "size": "14'0\" × 17'6\"",
+      "box": [
+        9.1,
+        20.7,
+        50.2,
+        24
+      ]
+    },
+    {
+      "name": "Lounge and kitchenette",
+      "box": [
+        9.1,
+        44.6,
+        50.2,
+        19.4
+      ]
+    },
+    {
+      "name": "Toilet",
+      "size": "8'6\" × 5'0\"",
+      "box": [
+        9.1,
+        7.2,
+        32.3,
+        12.5
+      ]
+    },
+    {
+      "name": "Walk-in wardrobe",
+      "size": "5'0\" × 5'0\"",
+      "box": [
+        41.4,
+        7.2,
+        17.9,
+        12.5
+      ]
+    },
+    {
+      "name": "Hot tub deck",
+      "size": "6 ft wide",
+      "box": [
+        61.1,
+        6.1,
+        21.6,
+        48
+      ]
+    },
+    {
+      "name": "Front deck",
+      "size": "6 ft wide",
+      "box": [
+        7.5,
+        65.2,
+        53.6,
+        15
+      ]
+    }
+  ]
+}

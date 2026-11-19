@@ -1,0 +1,142 @@
+{
+  "order": 3,
+  "name": "2BHK Villa",
+  "kind": "Two-bedroom villa",
+  "area": "",
+  "beds": "2 bedrooms",
+  "baths": 3,
+  "price": "",
+  "outdoor": "Pool deck",
+  "collection": "",
+  "line": "Two bedrooms in stone and timber under a deep hipped roof",
+  "blurb": "Stone walls, a deep hipped roof and one long living space between two bedroom suites, opening onto the garden.",
+  "hero": "/media/2bhk/ext-4-1774.webp",
+  "card": "/media/2bhk/ext-4-1774.webp",
+  "brochure": "",
+  "exteriors": [
+    {
+      "image": "/media/2bhk/ext-4-1774.webp",
+      "label": "Front, stone cladding"
+    },
+    {
+      "image": "/media/2bhk/ext-1-1947.webp",
+      "label": "Pool facade"
+    },
+    {
+      "image": "/media/2bhk/ext-3-1987.webp",
+      "label": "Living pavilion"
+    },
+    {
+      "image": "/media/2bhk/ext-5-1774.webp",
+      "label": "Corner view"
+    },
+    {
+      "image": "/media/2bhk/ext-2-1994.webp",
+      "label": "Front elevation"
+    }
+  ],
+  "interiors": [],
+  "plan": "/media/2bhk/plan-1876.webp",
+  "rooms": [
+    {
+      "name": "Living",
+      "size": "13'6\" × 16'9\"",
+      "box": [
+        50.1,
+        31.1,
+        16.5,
+        33.4
+      ]
+    },
+    {
+      "name": "Dining",
+      "size": "10'9\" × 16'9\"",
+      "box": [
+        34.6,
+        31.1,
+        15.5,
+        33.4
+      ]
+    },
+    {
+      "name": "Kitchen",
+      "size": "11'0\" × 12'3\"",
+      "box": [
+        24.6,
+        31.1,
+        10,
+        25.3
+      ]
+    },
+    {
+      "name": "Bedroom 1",
+      "size": "10'5\" × 13'6\"",
+      "box": [
+        1.1,
+        37.4,
+        13,
+        27
+      ]
+    },
+    {
+      "name": "Toilet (bedroom 1)",
+      "size": "8'0\" × 12'3\"",
+      "box": [
+        14.7,
+        38.8,
+        9.6,
+        17.6
+      ]
+    },
+    {
+      "name": "Bedroom 2",
+      "size": "10'5\" × 13'6\"",
+      "box": [
+        77.2,
+        37.4,
+        12.9,
+        27
+      ]
+    },
+    {
+      "name": "Toilet (bedroom 2)",
+      "size": "8'0\" × 12'3\"",
+      "box": [
+        67.2,
+        38.8,
+        9.6,
+        17.6
+      ]
+    },
+    {
+      "name": "Storage",
+      "size": "5'6\" × 4'3\"",
+      "box": [
+        24.6,
+        21.2,
+        6.8,
+        9.5
+      ]
+    },
+    {
+      "name": "Wash",
+      "size": "3'6\" × 4'3\"",
+      "box": [
+        31.8,
+        21.2,
+        4.4,
+        9.5
+      ]
+    },
+    {
+      "name": "Toilet",
+      "size": "6'9\" × 4'3\"",
+      "box": [
+        36.7,
+        21.2,
+        8.1,
+        9.5
+      ]
+    }
+  ]
+}

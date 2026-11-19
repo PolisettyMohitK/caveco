@@ -1,15 +1,22 @@
-// Contact + brand facts. Values marked TODO(client) need confirming.
+// Contact + brand facts. Phones, WhatsApp, Instagram and the hub come from
+// src/content/settings.json (editable in the CMS).
+import settings from '../content/settings.json';
+const s = settings as { phones: string[]; whatsapp: string; instagram: string; hub: { name: string; area: string } };
+if (!s.phones?.length || !/^\d{10,15}$/.test(s.whatsapp || '')) {
+  throw new Error('Content error in src/content/settings.json: add at least one phone, and the WhatsApp number as digits only with country code (e.g. 918897757221).');
+}
 export const site = {
   name: 'Cave Co.',
   tagline: 'Prefab farmhouses, built in 90 days.',
-  phones: ['+91 88977 57221', '+91 83742 21879'],
-  whatsapp: '918897757221',
-  instagram: 'https://www.instagram.com/the_cave_co/',
+  phones: s.phones,
+  whatsapp: s.whatsapp,
+  instagram: s.instagram,
+  hub: s.hub,
   hubs: [
     { city: 'Hyderabad', name: 'Experience Hub', area: 'Sainikpuri', address: 'Sainikpuri, Secunderabad — TODO(client): full address' },
     { city: 'Visakhapatnam', name: 'Studio', area: 'Vizag', address: 'TODO(client): address' },
   ],
-  enquiryEndpoint: '', // TODO(client): form endpoint (Formspree, Google Sheet, CRM)
+  enquiryEndpoint: '/api/enquire', // Cloudflare Pages Function in /functions/api/enquire.ts
   // Hero film. Until the client sends a clip, the card plays these stills as a slow slideshow.
   heroFilm: {
     src: '', // TODO(client): short muted loop, e.g. /media/film/orion.mp4

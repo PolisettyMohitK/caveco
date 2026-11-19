@@ -13,18 +13,10 @@ export const trades = [
   'Plumber', 'Carpenter', 'Painter', 'Interior designer', 'Liaison agent', 'Site supervisor',
 ];
 
-// Answers avoid numbers we haven't confirmed. TODO(client): add ratings, coating spec,
-// design life, warranty terms and financing partners.
-export const faq = [
-  { q: 'Will it handle the monsoon?', a: 'Roof and wall panels are sealed and sloped to shed water, and every home sits on a raised plinth.' },
-  { q: 'Does a steel house get hot?', a: 'The frame is wrapped in insulated panels, so heat stays out. Deep overhangs and cross-ventilation do the rest.' },
-  { q: 'What about termites and rust?', a: 'Steel doesn’t feed termites, and the frame is treated against rust before it leaves the factory.' },
-  { q: 'How long will it last?', a: 'We’ll walk you through design life and warranty on your first call, in writing.' },
-  { q: 'Do you handle approvals?', a: 'Yes. We prepare the drawings and follow up with the local authority for you.' },
-  { q: 'Can I get a loan for it?', a: 'Ask us on the first call and we’ll point you in the right direction.' },
-  { q: 'Where do you build?', a: 'Across Telangana and Andhra Pradesh, with hubs in Hyderabad and Vizag.' },
-  { q: 'Can I change the layout?', a: 'Each model has set options for size, finish and rooms. Bigger changes are possible — just ask.' },
-];
+// FAQ comes from src/content/faq.json (editable in the CMS).
+import faqJson from '../content/faq.json';
+export const faq: { q: string; a: string }[] = (faqJson as { questions: { q: string; a: string }[] }).questions
+  .filter((x) => x.q?.trim() && x.a?.trim());
 
 // Real owner quotes only. The section stays hidden while this is empty. TODO(client)
 export const quotes: { text: string; who: string; where: string }[] = [];

@@ -1,0 +1,26 @@
+# Cloudflare Pages config (project: caveco → caveco.pages.dev).
+# The static site is built by Astro into dist/; /functions holds the API (lead form).
+name = "caveco"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-01"
+
+# Leads database (Cloudflare D1).
+# BEFORE THE FIRST DEPLOY WITH THIS FILE: create the database and paste its id below:
+#   npx wrangler login
+#   npx wrangler d1 create caveco-leads
+#   npx wrangler d1 migrations apply caveco-leads --remote
+[[d1_databases]]
+binding = "LEADS"
+database_name = "caveco-leads"
+database_id = "00000000-0000-0000-0000-000000000000" # TODO: replace with the id from `wrangler d1 create`
+migrations_dir = "migrations"
+
+# Secrets are NOT set here. Set them in the Cloudflare dashboard
+# (Workers & Pages → caveco → Settings → Variables and Secrets) or with
+#   npx wrangler pages secret put ADMIN_TOKEN
+# ADMIN_TOKEN     password for /admin/leads (required to read leads)
+# IP_SALT         any random string
+# RESEND_API_KEY  optional, email alerts via resend.com
+# LEAD_EMAIL_TO   optional, who gets the alert (comma-separated)
+# LEAD_EMAIL_FROM optional, e.g. "Cave Co. Website <leads@yourdomain>"
+# LEAD_WEBHOOK_URL optional, e.g. a Google Sheet Apps Script URL

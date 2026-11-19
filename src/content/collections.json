@@ -1,0 +1,16 @@
+{
+  "collections": [
+    {
+      "name": "Origin",
+      "line": "For first-time buyers"
+    },
+    {
+      "name": "Crest",
+      "line": "Best for value"
+    },
+    {
+      "name": "Summit",
+      "line": "Name coming soon"
+    }
+  ]
+}

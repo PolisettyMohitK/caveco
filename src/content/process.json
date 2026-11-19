@@ -1,0 +1,34 @@
+{
+  "steps": [
+    {
+      "name": "Introductory call",
+      "text": "Tell us about your land and how you want to use it.",
+      "image": "/media/orion/photo-23-2560.webp"
+    },
+    {
+      "name": "Site visit",
+      "text": "We walk your plot and check access, levels and views.",
+      "image": "/media/orion/photo-3-2560.webp"
+    },
+    {
+      "name": "Design",
+      "text": "Pick a model and finishes; we fit it to your land.",
+      "image": "/media/1bhk/plan-2046.webp"
+    },
+    {
+      "name": "Manufacturing",
+      "text": "Your home is made in our factory while the site is prepared.",
+      "image": "/media/cottage/ext-2-1497.webp"
+    },
+    {
+      "name": "Installation",
+      "text": "The finished parts are put together on your land.",
+      "image": "/media/cottage/ext-4-1497.webp"
+    },
+    {
+      "name": "Move in",
+      "text": "We hand over the keys to a ready home.",
+      "image": "/media/orion/photo-31-2560.webp"
+    }
+  ]
+}

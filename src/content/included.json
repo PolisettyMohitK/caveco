@@ -1,0 +1,66 @@
+{
+  "groups": [
+    {
+      "title": "Structure",
+      "items": [
+        "Light-gauge steel frame",
+        "Insulated wall panels",
+        "Foundation and plinth",
+        "Full specification coming soon"
+      ]
+    },
+    {
+      "title": "Roofing",
+      "items": [
+        "Insulated roof panels",
+        "Rainwater drainage",
+        "Full specification coming soon"
+      ]
+    },
+    {
+      "title": "Doors & Openings",
+      "items": [
+        "Wooden main door with veneer",
+        "Flush doors for washrooms",
+        "DGU glass windows",
+        "Smart lock for the main door",
+        "Key locks for internal doors"
+      ]
+    },
+    {
+      "title": "Flooring",
+      "items": [
+        "Full specification coming soon"
+      ]
+    },
+    {
+      "title": "Bathrooms",
+      "items": [
+        "Bath fixtures and fittings",
+        "Plumbing",
+        "Full specification coming soon"
+      ]
+    },
+    {
+      "title": "Electrical & Lighting fixtures",
+      "items": [
+        "Wiring and lighting",
+        "Fan and AC points",
+        "Full specification coming soon"
+      ]
+    },
+    {
+      "title": "Painting",
+      "items": [
+        "Full specification coming soon"
+      ]
+    },
+    {
+      "title": "Wardrobes",
+      "items": [
+        "Wardrobes and storage",
+        "Full specification coming soon"
+      ]
+    }
+  ]
+}

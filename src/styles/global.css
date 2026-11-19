@@ -4,21 +4,24 @@
    Red appears only on hover.
    ========================================================= */
 :root {
-  --ink: #0b0b0c;
+  --ink: #2b1d14;
+  --brown: #5a3a24;
+  --sand: #f3efea;
+  --mist: #f5f5f4;
   --white: #ffffff;
-  --grey: #5f6670;
-  --line: rgba(11, 11, 12, 0.1);
+  --grey: #6f6259;
+  --line: rgba(43, 29, 20, 0.1);
 
-  --sky-top: #9fc2e4;
-  --sky-mid: #c7ddf1;
-  --sky-low: #eaf3fb;
-  --sky-tint: #e6f0f9;   /* soft surfaces on white islands */
-  --sky-deep: #3f6f9f;   /* blueprint panel */
-  --red: #e2412b;        /* hover only */
+  --sky-top: #ffffff;
+  --sky-mid: #ffffff;
+  --sky-low: #ffffff;
+  --sky-tint: #f3efea;   /* soft surfaces on white islands */
+  --sky-deep: #5a3a24;   /* blueprint panel */
+  --red: #3e2717;        /* hover only */
 
-  --sans: 'Hanken Grotesk Variable', system-ui, sans-serif;
+  --sans: 'Manrope Variable', system-ui, sans-serif;
   --mono: 'Geist Mono Variable', ui-monospace, monospace;
-  --logo: 'Montserrat', var(--sans);
+  --logo: 'Manrope Variable', var(--sans);
 
   --r-xl: clamp(24px, 2.6vw, 36px);  /* islands */
   --r-lg: clamp(18px, 2vw, 26px);    /* photos, cards */
@@ -27,8 +30,16 @@
   --edge: clamp(10px, 1.4vw, 20px);  /* sky visible around islands */
   --gap: clamp(10px, 1.2vw, 16px);   /* sky between islands */
   --pad: clamp(20px, 3.6vw, 56px);   /* inside islands */
-  --header-h: 60px;
-  --header-top: 12px;
+  /* LAYOUT GUIDELINE — one content line for the whole site.
+     --gutter is the left (and right) edge of all content: the logo, every heading, text, accordions,
+     cards and the first card of every carousel start exactly on it. Content never starts left of it.
+     Only full-bleed photos (hero, band, room viewer) sit at --edge, and carousels may run past the
+     right gutter to the screen edge. On wide screens the line follows a centred 1440px column.
+     Use .wrap (padding-inline: var(--gutter)) for any block of content; never hand-pad a section. */
+  --content-max: 1440px;
+  --gutter: max(calc(var(--edge) + var(--pad)), calc((100vw - var(--content-max)) / 2 + var(--edge) + var(--pad)));
+  --header-h: 68px;
+  --header-top: 0px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -52,14 +63,14 @@ body {
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip; /* clip, not hidden: keeps position: sticky working */
 }
 img, video { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 ::selection { background: var(--ink); color: var(--white); }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-main { padding-top: calc(var(--header-top) + var(--header-h) + var(--gap)); }
+main { padding-top: var(--header-h); }
 
 /* ---------- Sky backdrop ---------- */
 .sky { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
@@ -86,7 +97,9 @@ main { padding-top: calc(var(--header-top) + var(--header-h) + var(--gap)); }
 .island.dark { background: var(--ink); color: var(--white); }
 .island.glass { background: rgba(255, 255, 255, .62); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); }
 .island.bleed { padding: 0; overflow: hidden; }
-.open-sky { padding: clamp(32px, 6vw, 88px) calc(var(--edge) + var(--pad)) clamp(28px, 4vw, 56px); }
+.open-sky { padding: clamp(32px, 6vw, 88px) var(--gutter) clamp(28px, 4vw, 56px); }
+/* the content line (see LAYOUT GUIDELINE above) */
+.wrap { padding-inline: var(--gutter); box-sizing: border-box; }
 
 /* ---------- Type ---------- */
 .h-display, .h-section {
@@ -112,13 +125,17 @@ main { padding-top: calc(var(--header-top) + var(--header-h) + var(--gap)); }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   height: 48px; padding: 0 22px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--ink);
-  background: var(--white); color: var(--ink);
-  font-size: 15px; font-weight: 500; white-space: nowrap;
+  border-radius: 999px;
+  border: 1px solid var(--brown);
+  background: var(--brown); color: var(--white);
+  font-size: 15px; font-weight: 600; white-space: nowrap;
   transition: background-color .45s var(--ease), color .45s var(--ease), border-color .45s var(--ease), border-radius .55s var(--ease);
 }
-.btn:hover, .btn:focus-visible { background: var(--red); border-color: var(--red); color: var(--white); border-radius: 999px; }
+.btn:hover, .btn:focus-visible { background: var(--red); border-color: var(--red); color: var(--white); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--brown); }
+.btn.ghost:hover { background: var(--sand); border-color: var(--sand); color: var(--ink); }
+.btn.soft { background: var(--sand); border-color: var(--sand); color: var(--brown); }
+.btn.soft:hover { background: #e9e1d7; border-color: #e9e1d7; }
 .btn .arrow { transition: transform .5s var(--ease); }
 .btn:hover .arrow { transform: translateX(4px); }
 .dark .btn, .on-photo .btn { border-color: var(--white); }

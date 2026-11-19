@@ -1,0 +1,141 @@
+{
+  "order": 2,
+  "name": "1BHK Villa",
+  "kind": "One-bedroom villa",
+  "area": "600 sft",
+  "beds": "1 bedroom",
+  "baths": 1,
+  "price": "",
+  "outdoor": "Private pool",
+  "collection": "",
+  "line": "A 600 sft white villa that opens onto its own pool",
+  "blurb": "A white plaster villa with an open kitchen, dining and living room that steps straight down to its own pool.",
+  "hero": "/media/1bhk/ext-s1b-1774.webp",
+  "card": "/media/1bhk/ext-s1b-1774.webp",
+  "brochure": "",
+  "exteriors": [
+    {
+      "image": "/media/1bhk/ext-s1b-1774.webp",
+      "label": "Front, pool and steps"
+    },
+    {
+      "image": "/media/1bhk/ext-s3b-1804.webp",
+      "label": "Across the pool"
+    },
+    {
+      "image": "/media/1bhk/ext-s2b-1804.webp",
+      "label": "Corner view"
+    },
+    {
+      "image": "/media/1bhk/ext-s4c-1672.webp",
+      "label": "Pool and pergola"
+    },
+    {
+      "image": "/media/1bhk/ext-s1a-1774.webp",
+      "label": "Front in daylight"
+    }
+  ],
+  "interiors": [
+    {
+      "image": "/media/1bhk/int-s4a-1494.webp",
+      "label": "Dining and living"
+    },
+    {
+      "image": "/media/1bhk/int-s3a-1495.webp",
+      "label": "Kitchen"
+    },
+    {
+      "image": "/media/1bhk/int-s1a-1509.webp",
+      "label": "Living room"
+    },
+    {
+      "image": "/media/1bhk/int-s5a-1496.webp",
+      "label": "Bedroom"
+    },
+    {
+      "image": "/media/1bhk/int-s6a-1496.webp",
+      "label": "Bedroom, angled"
+    }
+  ],
+  "plan": "/media/1bhk/plan-2046.webp",
+  "rooms": [
+    {
+      "name": "Living",
+      "size": "9'0\" × 9'6\"",
+      "box": [
+        22.5,
+        28.1,
+        22.5,
+        37.2
+      ]
+    },
+    {
+      "name": "Dining",
+      "size": "9'0\" × 9'6\"",
+      "box": [
+        2.3,
+        28.1,
+        20.2,
+        37.2
+      ]
+    },
+    {
+      "name": "Kitchen",
+      "size": "18'1\" × 6'0\"",
+      "box": [
+        2.3,
+        3.3,
+        43,
+        24.8
+      ]
+    },
+    {
+      "name": "Utility",
+      "size": "5'0\" × 6'3\"",
+      "box": [
+        45.3,
+        3.3,
+        12.7,
+        24.8
+      ]
+    },
+    {
+      "name": "Toilet",
+      "size": "5'0\" × 10'0\"",
+      "box": [
+        46,
+        28.1,
+        12,
+        37.2
+      ]
+    },
+    {
+      "name": "Bedroom",
+      "size": "10'4\" × 15'9\"",
+      "box": [
+        59,
+        3.3,
+        24.6,
+        62
+      ]
+    },
+    {
+      "name": "Deck and steps",
+      "box": [
+        2.3,
+        67.4,
+        32.3,
+        23.2
+      ]
+    },
+    {
+      "name": "Pool",
+      "box": [
+        37.5,
+        82.7,
+        56.8,
+        15.7
+      ]
+    }
+  ]
+}

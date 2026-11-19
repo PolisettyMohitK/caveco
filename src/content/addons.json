@@ -1,0 +1,34 @@
+{
+  "addons": [
+    {
+      "name": "Private pool",
+      "price": "",
+      "image": "/media/1bhk/ext-s3b-1804.webp"
+    },
+    {
+      "name": "Hot tub deck",
+      "price": "",
+      "image": "/media/cottage/ext-5-1493.webp"
+    },
+    {
+      "name": "Pergola",
+      "price": "",
+      "image": "/media/1bhk/ext-s4c-1672.webp"
+    },
+    {
+      "name": "Seating deck",
+      "price": "",
+      "image": "/media/cottage/ext-3-1282.webp"
+    },
+    {
+      "name": "Add-on name",
+      "price": "",
+      "image": ""
+    },
+    {
+      "name": "Add-on name",
+      "price": "",
+      "image": ""
+    }
+  ]
+}

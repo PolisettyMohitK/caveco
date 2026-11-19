@@ -1,0 +1,174 @@
+---
+// Process as a slider (client's Figma, model page): a filmstrip of photos, a track with a dot,
+// and the step names under it. Scroll-driven: the section pins and the strip glides smoothly
+// from step to step as you scroll; the step on the dot is big and bold with a line of detail,
+// and its neighbours fade with distance. Clicking a step, dragging and arrow keys also work.
+import { steps } from '../data/models';
+import { pic, isPlan } from '../data/media';
+interface Props { title?: string }
+const { title = 'A simple, beautiful process.' } = Astro.props;
+---
+<section class="ps" data-ps data-nospring style={`--n:${steps.length}`}>
+  <div class="ps-stick">
+    <h2 class="h-section ps-title">{title}</h2>
+    <div class="ps-film" data-ps-film tabindex="0" aria-roledescription="carousel" aria-label="Process steps">
+      <div class="ps-strip" data-ps-strip>
+        {steps.map((s, i) => (
+          <div class:list={['ps-frame', { plan: isPlan(s.image) }]} data-ps-frame={i} aria-hidden={i ? 'true' : 'false'}>
+            <img {...pic(s.image, '(min-width: 900px) 62vw, 80vw')} alt={`Step ${i + 1}: ${s.name}`} loading={i < 2 ? undefined : 'lazy'} draggable="false" />
+          </div>
+        ))}
+      </div>
+    </div>
+    <div class="ps-track" aria-hidden="true"><span class="ps-line"><i data-ps-fill></i></span><span class="ps-dot"></span><span class="ps-line"><i data-ps-fill2></i></span></div>
+    <div class="ps-labels">
+      <div class="ps-row" data-ps-row>
+        {steps.map((s, i) => <button class="ps-lab" data-ps-lab={i}>{s.name}</button>)}
+      </div>
+    </div>
+    <p class="ps-detail" data-ps-detail aria-live="polite">{steps[0].text}</p>
+  </div>
+  <script type="application/json" data-ps-text set:html={JSON.stringify(steps.map((s) => s.text))} />
+</section>
+
+<style>
+  /* tall wrapper: each step gets a stretch of scroll; the inside stays pinned */
+  .ps { position: relative; height: calc(100svh + (var(--n) - 1) * 42svh); }
+  .ps-stick { position: sticky; top: var(--header-h); height: calc(100svh - var(--header-h)); overflow: hidden;
+    display: flex; flex-direction: column; justify-content: center; padding-block: clamp(12px, 2vw, 28px); box-sizing: border-box; }
+  .ps-title { text-align: center; margin: 0 auto clamp(18px, 2.6vw, 36px); padding-inline: var(--pad); color: var(--brown); font-weight: 700; letter-spacing: -0.035em; }
+
+  .ps-film { cursor: grab; user-select: none; outline: none; touch-action: pan-y; }
+  .ps-film:active { cursor: grabbing; }
+  .ps-strip { display: flex; gap: clamp(12px, 1.4vw, 20px); will-change: transform; }
+  .ps-frame { flex: none; width: min(60vw, 960px, calc((100svh - var(--header-h) - 300px) * 16 / 9)); aspect-ratio: 16 / 9; border-radius: var(--r-xl); overflow: hidden; background: var(--sand); will-change: transform, opacity; }
+  .ps-frame img { width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; pointer-events: none; }
+  .ps-frame.plan { background: #f3eee8; }
+  .ps-frame.plan img { object-fit: contain; padding: 5%; box-sizing: border-box; }
+  @media (max-width: 700px) { .ps-frame { width: 80vw; aspect-ratio: 4 / 3.4; } }
+
+  .ps-track { display: flex; align-items: center; justify-content: center; gap: 10px; margin: clamp(22px, 3vw, 40px) auto 0; width: min(560px, 76vw); }
+  .ps-line { position: relative; flex: 1; height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .ps-line i { position: absolute; inset: 0; background: var(--brown); opacity: .35; transform-origin: right; transform: scaleX(var(--f, 0)); }
+  .ps-line:last-child i { transform-origin: left; }
+  .ps-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--brown); flex: none; }
+
+  .ps-labels { margin-top: 16px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+  .ps-row { display: flex; align-items: baseline; gap: clamp(34px, 4vw, 64px); width: max-content; will-change: transform; }
+  .ps-lab { font-size: clamp(15px, 1.3vw, 18px); font-weight: 500; color: var(--grey); white-space: nowrap; padding: 4px 2px; transition: color .5s, opacity .5s; }
+  .ps-lab:hover { color: var(--ink); }
+  .ps-lab.on { font-weight: 700; color: var(--brown); letter-spacing: -0.02em; }
+  .ps-detail { text-align: center; margin: 10px auto 0; padding-inline: var(--pad); max-width: 44ch; color: var(--grey); min-height: 3em; transition: opacity .35s; }
+</style>
+
+<script>
+  import { ScrollTrigger } from '../scripts/motion';
+
+  document.querySelectorAll<HTMLElement>('[data-ps]').forEach((root) => {
+    const film = root.querySelector<HTMLElement>('[data-ps-film]')!;
+    const strip = root.querySelector<HTMLElement>('[data-ps-strip]')!;
+    const frames = [...root.querySelectorAll<HTMLElement>('[data-ps-frame]')];
+    const row = root.querySelector<HTMLElement>('[data-ps-row]')!;
+    const labs = [...root.querySelectorAll<HTMLButtonElement>('[data-ps-lab]')];
+    const detail = root.querySelector<HTMLElement>('[data-ps-detail]')!;
+    const fillL = root.querySelector<HTMLElement>('[data-ps-fill]')!;
+    const fillR = root.querySelector<HTMLElement>('[data-ps-fill2]')!;
+    const text: string[] = JSON.parse(root.querySelector('[data-ps-text]')!.textContent || '[]');
+    const n = frames.length;
+    let pos = 0;      // 0..n-1, fractional while gliding
+    let shown = -1;
+
+    // measured centres (frames and labels), refreshed on resize
+    let fc: number[] = [], lc: number[] = [], lw: number[] = [];
+    const measure = () => {
+      fc = frames.map((f) => f.offsetLeft + f.offsetWidth / 2);
+      labs.forEach((l) => l.style.fontSize = '');
+      lc = labs.map((l) => l.offsetLeft + l.offsetWidth / 2);
+      lw = labs.map((l) => l.offsetWidth);
+    };
+    const lerp = (a: number[], f: number) => { const i = Math.floor(f), t = f - i; return i >= n - 1 ? a[n - 1] : a[i] + (a[i + 1] - a[i]) * t; };
+
+    const render = () => {
+      const half = film.clientWidth / 2;
+      strip.style.transform = `translate3d(${half - lerp(fc, pos)}px,0,0)`;
+      frames.forEach((f, k) => {
+        const d = Math.min(1, Math.abs(k - pos));
+        f.style.opacity = String(1 - d * 0.55);
+        f.style.transform = `scale(${1 - d * 0.06})`;
+      });
+      // the label on the dot grows; neighbours fade with distance
+      labs.forEach((l, k) => {
+        const d = Math.abs(k - pos);
+        const s = 1 + Math.max(0, 1 - d) * 0.5;
+        l.style.transform = `scale(${s})`;
+        l.style.opacity = String(Math.max(0.3, 1 - Math.max(0, d - 1) * 0.35));
+      });
+      row.style.transform = `translate3d(${row.parentElement!.clientWidth / 2 - lerp(lc, pos)}px,0,0)`;
+      const near = Math.round(pos);
+      if (near !== shown) {
+        shown = near;
+        labs.forEach((l, k) => l.classList.toggle('on', k === near));
+        frames.forEach((f, k) => f.setAttribute('aria-hidden', k === near ? 'false' : 'true'));
+        detail.textContent = text[near];
+      }
+      const p = n > 1 ? pos / (n - 1) : 1;
+      fillL.style.setProperty('--f', String(p));
+      fillR.style.setProperty('--f', String(1 - p));
+    };
+
+    // labels scale around their centre, so give them room
+    labs.forEach((l) => { l.style.transformOrigin = '50% 70%'; });
+
+    const st = ScrollTrigger.create({
+      trigger: root, start: 'top top', end: 'bottom bottom', invalidateOnRefresh: true,
+      onUpdate: (self) => { pos = self.progress * (n - 1); render(); },
+      onRefresh: () => { measure(); render(); },
+    });
+
+    // jump the page to a step (the strip follows the scroll)
+    const lenis = () => (window as any).__lenis;
+    const scrollToStep = (i: number) => {
+      const k = Math.max(0, Math.min(n - 1, i));
+      const y = st.start + (st.end - st.start) * (n > 1 ? k / (n - 1) : 0);
+      lenis() ? lenis().scrollTo(y, { duration: 1.2 }) : window.scrollTo({ top: y, behavior: 'smooth' });
+    };
+    labs.forEach((b, i) => b.addEventListener('click', () => scrollToStep(i)));
+    frames.forEach((f, i) => f.addEventListener('click', () => { if (!dragged && i !== Math.round(pos)) scrollToStep(i); }));
+    film.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); scrollToStep(Math.round(pos) + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); scrollToStep(Math.round(pos) - 1); }
+    });
+
+    // Drag / swipe sideways: moves the page, so the strip glides with your finger
+    let x0 = 0, y0 = 0, s0 = 0, down = false, horiz = false, dragged = false;
+    film.addEventListener('pointerdown', (e) => { down = true; horiz = false; dragged = false; x0 = e.clientX; y0 = e.clientY; s0 = window.scrollY; });
+    window.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - x0, dy = e.clientY - y0;
+      if (!horiz && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) horiz = true;
+      if (!horiz) return;
+      dragged = true;
+      const perStep = (st.end - st.start) / Math.max(1, n - 1);
+      const y = s0 - dx * (perStep / Math.max(200, frames[0].offsetWidth));
+      lenis() ? lenis().scrollTo(y, { immediate: true }) : window.scrollTo(0, y);
+    });
+    const up = () => {
+      if (!down) return;
+      down = false;
+      if (horiz) scrollToStep(Math.round(pos)); // settle on the nearest step
+      setTimeout(() => { dragged = false; }, 0);
+    };
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+    // trackpad sideways swipe
+    film.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      const y = window.scrollY + e.deltaX * 1.4;
+      lenis() ? lenis().scrollTo(y, { immediate: true }) : window.scrollTo(0, y);
+    }, { passive: false });
+
+    measure(); render();
+    window.addEventListener('load', () => { measure(); render(); });
+  });
+</script>

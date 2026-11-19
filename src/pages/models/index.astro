@@ -1,62 +1,274 @@
 ---
 import Base from '../../layouts/Base.astro';
-import ModelCard from '../../components/ModelCard.astro';
 import Accordion from '../../components/Accordion.astro';
-import PlanMorph from '../../components/PlanMorph.astro';
-import { models, included } from '../../data/models';
+import { models, collections, specLine } from '../../data/models';
+import { get, img, pic } from '../../data/media';
 import { faq } from '../../data/content';
+
+const heroImg = get('orion', 'photo-29');
+// Quiz: five questions, as in the Figma (Q1 is the client's land-size question).
+// TODO(client): confirm the questions and how answers map to a model.
+const quiz = [
+  { k: 'plot', q: 'What is the size of the land you are planning to build on?', a: ['150–300 sq yards', '300–500 sq yards', '500–1000 sq yards', 'Above 1000 sq yards', 'No land yet'] },
+  { k: 'use', q: 'How will you use your Cave?', a: ['Weekend home', 'Rental stay', 'Living full-time', 'Resort'] },
+  { k: 'beds', q: 'How many bedrooms do you need?', a: ['One', 'Two', 'Not sure'] },
+  { k: 'water', q: 'What would you like outside?', multi: true, a: ['A private pool', 'A hot tub', 'A seating deck', 'A pergola', 'A garden'] },
+  { k: 'when', q: 'When do you want to start?', a: ['Right away', 'In 3 months', 'In 6 months', 'Just exploring'] },
+];
+const cards = models.map((m) => ({ slug: m.slug, name: m.name, spec: specLine(m), src: pic(m.card, '(min-width: 900px) 500px, 90vw').src }));
 ---
-<Base title="Models" page="models" description="The Cave Co. range of prefab farmhouses. Pick a model and a finish; we fit it to your land.">
-  <section class="open-sky">
-    <h1 class="h-display" data-reveal><span>Choose it</span><span>like a car.</span></h1>
-    <p class="lede intro-l" data-reveal data-delay=".08">A small range of homes, each designed down to the hinge. Pick the model and the finish; we fit it to your land and fix the price.</p>
-  </section>
-
-  <section class="island grid">
-    {models.map((m) => <ModelCard m={m} />)}
-  </section>
-
-  <section class="island blueprint">
-    <PlanMorph />
-  </section>
-
-  <section class="island">
-    <div class="sec-head">
-      <h2 class="h-section" data-reveal><span>Turnkey means</span><span>nothing left to buy.</span></h2>
-      <p class="lede" data-reveal data-delay=".08">Every model comes complete. Move in with your bags.</p>
+<Base title="Models" page="models" description="The Cave Co. range: Cottage, 1BHK Villa and 2BHK Villa. Find the Cave that's built around the way you live.">
+  <section class="hero">
+    <div class="hero-img">
+      <img {...img(heroImg, '100vw')} alt="A finished Cave at dusk, Chilkur" fetchpriority="high" />
+      <h1 class="h-display">Find the Cave that's built<br /> around the way you live.</h1>
     </div>
-    <div class="incl">
-      {included.map((g, i) => (
-        <div class="incl-col" data-reveal data-delay={String(i * 0.06)}>
-          <h3>{g.title}</h3>
-          <ul>{g.items.map((x) => <li>{x}</li>)}</ul>
+  </section>
+
+  <!-- Collections (build classes). TODO(client): names, lines, models in each -->
+  <section class="sec wrap">
+    <h2 class="h-section" data-reveal>Which one is right?</h2>
+    <div class="cols">
+      {collections.map((c, i) => (
+        <div class="col" data-reveal data-delay={String(i * 0.05)}>
+          <h3>{c.name}</h3>
+          <p>{c.line}</p>
+          <button class="btn" data-col={c.slug}>Explore {c.name.replace('…', '')} collection</button>
         </div>
       ))}
     </div>
   </section>
 
-  <section class="island faq" id="faq">
+  <section class="sec mist" id="collection">
+    <div class="wrap">
+      <div class="fc-head">
+        <h2 class="h-section" data-reveal>Featured collection.</h2>
+        <div class="filters" role="tablist" aria-label="Collections">
+          <button class="chip on" data-filter="all">All</button>
+          {collections.map((c) => <button class="chip" data-filter={c.slug}>{c.name}</button>)}
+        </div>
+      </div>
+      <div class="fc">
+        {models.map((m, i) => (
+          <a class="mc" href={`/models/${m.slug}`} data-in={collections.filter((c) => c.models.includes(m.slug)).map((c) => c.slug).join(' ')} data-reveal data-delay={String(i * 0.05)}>
+            <img {...pic(m.card, '(min-width: 900px) 660px, 100vw')} alt={`${m.name} exterior`} loading={i ? 'lazy' : 'eager'} />
+            <div class="mc-copy">
+              <div><h3>{m.name}</h3><p>{specLine(m)}</p></div>
+              <p class="mc-price">{m.price ?? '₹ — Lakhs'}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+      <p class="fc-empty" data-empty hidden>Models for this collection are coming soon. <a href="/enquire">Ask us what's planned</a>.</p>
+    </div>
+  </section>
+
+  <!-- Quiz -->
+  <section class="sec wrap">
+    <h2 class="h-section center" data-reveal>Unsure what to choose? Answer these questions.</h2>
+    <div class="quiz" data-quiz>
+      <div class="qz-l">
+        {quiz.map((q, i) => (
+          <div class="qz-q" data-q={i} hidden={i > 0}>
+            <p class="qz-n">Question {i + 1} of {quiz.length}</p>
+            <p class="qz-text">{q.q}</p>
+            {q.multi && <p class="qz-hint">Pick as many as you like.</p>}
+            {i > 0 && <button class="qz-back" data-back>← Back</button>}
+          </div>
+        ))}
+        <div class="qz-q" data-q="result" hidden>
+          <p class="qz-n">A good place to start</p>
+          <p class="qz-text" data-r-name></p>
+          <p class="qz-sub" data-r-why></p>
+          <button class="qz-back" data-restart>Start again</button>
+        </div>
+        <div class="dots" aria-hidden="true">{[...quiz, 0].map((_, i) => <span data-dot={i} class:list={{ on: i === 0 }}></span>)}</div>
+      </div>
+      <div class="qz-r">
+        {quiz.map((q, i) => (
+          <div class:list={['qz-opts', { multi: q.multi }]} data-opts={i} hidden={i > 0} role="group" aria-label={q.q}>
+            {q.a.map((a) => <button class="opt" data-k={q.k} data-v={a} aria-pressed={q.multi ? 'false' : undefined}><span>{a}</span>{q.multi && <i class="tick" aria-hidden="true"></i>}</button>)}
+            {q.multi && <button class="btn qz-next" data-next>Next</button>}
+          </div>
+        ))}
+        <div class="qz-res" data-opts="result" hidden>
+          <img data-r-img alt="" />
+          <div class="qz-res-btns">
+            <a class="btn" data-r-view href="/models">View model</a>
+            <a class="btn soft" data-r-send href="/enquire">Send my answers</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="application/json" data-cards set:html={JSON.stringify(cards)} />
+  </section>
+
+  <section class="sec wrap faq" id="faq">
     <div class="faq-l">
-      <h2 class="h-section" data-reveal><span>Ask us</span><span>anything.</span></h2>
-      <p class="lede">Most of these came up in our Instagram comments. If yours isn’t here, ask.</p>
-      <button class="btn" data-enquire>Ask a question <span class="arrow">→</span></button>
+      <h2 class="h-section" data-reveal>Questions.</h2>
+      <p class="lede">If yours isn't here, ask us.</p>
+      <a class="btn" href="/enquire">Ask a question</a>
     </div>
     <Accordion items={faq} id="faq" />
   </section>
 </Base>
 
 <style>
-  .intro-l { margin-top: 20px; }
-  .grid { display: grid; gap: 32px 16px; grid-template-columns: 1fr; }
-  .grid :global(.card) { width: 100%; }
-  @media (min-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (min-width: 1100px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-  .blueprint { background: var(--sky-deep); color: var(--white); }
-  .incl { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .incl-col { background: var(--sky-tint); border-radius: var(--r-lg); padding: 22px; }
-  .incl-col h3 { margin: 0 0 10px; font-size: 18px; font-weight: 500; }
-  .incl-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; color: var(--grey); }
+  .sec { padding-block: clamp(56px, 8vw, 112px); }
+  .mist { background: var(--mist); }
+  .h-display, .h-section { color: var(--brown); font-weight: 700; letter-spacing: -0.035em; }
+  .h-section { margin: 0 0 clamp(20px, 2.6vw, 36px); }
+  .center { text-align: center; }
+  .lede { color: var(--grey); }
+
+  .hero { padding: clamp(8px, 1vw, 16px) var(--edge) 0; }
+  .hero-img { position: relative; max-width: 2560px; margin: 0 auto; height: min(72svh, 760px); min-height: 420px; border-radius: var(--r-xl); overflow: hidden; display: grid; place-items: center; background: var(--sand); }
+  .hero-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero-img::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(24,16,10,.5), rgba(24,16,10,.15) 70%); }
+  .hero-img .h-display { position: relative; z-index: 1; margin: 0; padding: 0 var(--pad); text-align: center; color: #fff; text-wrap: balance; font-size: clamp(32px, 4.6vw, 68px); line-height: 1.08; }
+
+  .cols { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .col { display: grid; justify-items: center; gap: 6px; padding: clamp(24px, 3vw, 40px) 20px; border-radius: var(--r-lg); background: var(--mist); text-align: center; }
+  .col h3 { margin: 0; font-size: clamp(26px, 2.4vw, 34px); font-weight: 600; color: var(--brown); letter-spacing: -0.02em; }
+  .col p { margin: 0 0 12px; color: var(--grey); font-size: 14px; }
+
+  .fc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px 24px; flex-wrap: wrap; margin-bottom: clamp(20px, 2.6vw, 36px); }
+  .fc-head .h-section { margin: 0; }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { padding: 8px 16px; border-radius: 99px; background: #fff; font-size: 14px; font-weight: 600; color: var(--ink); transition: background-color .3s, color .3s; }
+  .chip.on { background: var(--brown); color: #fff; }
+  .fc { display: grid; gap: clamp(12px, 1.4vw, 20px); }
+  @media (min-width: 760px) { .fc { grid-template-columns: 1fr 1fr; } }
+  .mc { position: relative; aspect-ratio: 16 / 11; border-radius: var(--r-lg); overflow: hidden; background: var(--sand); display: block; }
+  .mc[hidden] { display: none; }
+  .mc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.32,.72,0,1); }
+  .mc:hover img { transform: scale(1.04); }
+  .mc::after { content: ''; position: absolute; inset: 50% 0 0; background: linear-gradient(to top, rgba(28,20,14,.66), transparent); }
+  .mc-copy { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding: clamp(16px, 2vw, 26px); color: #fff; }
+  .mc h3 { margin: 0; font-size: clamp(20px, 2vw, 28px); font-weight: 700; letter-spacing: -0.02em; text-transform: uppercase; }
+  .mc-copy p { margin: 2px 0 0; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.8); }
+  .mc-copy .mc-price { margin: 0; font-size: clamp(18px, 1.8vw, 26px); font-weight: 700; color: #fff; white-space: nowrap; }
+  .fc-empty { margin: 16px 0 0; color: var(--grey); }
+  .fc-empty a { color: var(--brown); font-weight: 600; text-decoration: underline; }
+
+  .quiz { display: grid; border-radius: var(--r-xl); overflow: hidden; background: var(--mist); }
+  @media (min-width: 860px) { .quiz { grid-template-columns: 1fr 1fr; min-height: 380px; } }
+  .qz-l { padding: clamp(24px, 4vw, 56px); display: grid; align-content: center; gap: clamp(24px, 3vw, 40px); }
+  .qz-q { display: grid; gap: 12px; justify-items: start; }
+  .qz-n { margin: 0; font-size: 13px; font-weight: 700; color: var(--brown); }
+  .qz-text { margin: 0; font-size: clamp(22px, 2.2vw, 30px); line-height: 1.3; color: var(--ink); letter-spacing: -0.015em; max-width: 22ch; }
+  .qz-sub { margin: 0; color: var(--grey); max-width: 40ch; }
+  .qz-back { font-size: 14px; font-weight: 600; color: var(--grey); padding: 4px 0; }
+  .qz-back:hover { color: var(--brown); }
+  .qz-r { padding: clamp(16px, 3vw, 40px) clamp(24px, 4vw, 56px); display: grid; align-content: center; }
+  .qz-hint { margin: -4px 0 0; font-size: 14px; color: var(--grey); }
+  .qz-opts { display: grid; gap: 10px; }
+  .opt { text-align: left; padding: 14px 20px; border-radius: 99px; background: #fff; font-size: 15px; font-weight: 600; color: var(--ink); box-shadow: 0 0 0 1px var(--line) inset; transition: background-color .3s, color .3s, transform .5s cubic-bezier(.32,.72,0,1); }
+  .opt:hover { transform: translateX(4px); }
+  .opt.on { background: var(--brown); color: #fff; }
+  .opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .tick { flex: none; width: 20px; height: 20px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--line) inset; position: relative; transition: background-color .3s, box-shadow .3s; }
+  .opt.on .tick { background: #fff; box-shadow: none; }
+  .opt.on .tick::after { content: ''; position: absolute; left: 7px; top: 4px; width: 5px; height: 9px; border: solid var(--brown); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .qz-next { justify-self: start; margin-top: 6px; }
+  .qz-res { display: grid; gap: 14px; }
+  .qz-res img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-lg); background: var(--mist); }
+  .qz-res-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .qz-q, .qz-opts, .qz-res { animation: qin .7s cubic-bezier(.32,.72,0,1); }
+  @keyframes qin { from { opacity: 0; transform: translateY(10px); } }
+  .dots { display: flex; gap: 6px; }
+  .dots span { width: 6px; height: 6px; border-radius: 99px; background: #cfc6bc; transition: width .5s cubic-bezier(.32,.72,0,1), background-color .4s; }
+  .dots span.on { width: 20px; background: var(--brown); }
+  [hidden] { display: none !important; }
+
   .faq { display: grid; gap: 32px; }
-  .faq-l { display: grid; gap: 18px; justify-items: start; align-content: start; }
+  .faq-l { display: grid; gap: 14px; justify-items: start; align-content: start; }
+  .faq-l .h-section, .faq-l .lede { margin: 0; }
   @media (min-width: 1000px) { .faq { grid-template-columns: 1fr 1.4fr; gap: 64px; } }
 </style>
+
+<script>
+  // Collections: filter the featured grid. Until the client assigns models to collections,
+  // an empty collection shows a "coming soon" note.
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('.mc')];
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  const filter = (f: string) => {
+    chips.forEach((c) => c.classList.toggle('on', c.dataset.filter === f));
+    let shown = 0;
+    cards.forEach((c) => { const ok = f === 'all' || (c.dataset.in || '').split(' ').includes(f); c.hidden = !ok; if (ok) shown++; });
+    empty.hidden = shown > 0;
+  };
+  chips.forEach((c) => c.addEventListener('click', () => filter(c.dataset.filter!)));
+  document.querySelectorAll<HTMLButtonElement>('[data-col]').forEach((b) => b.addEventListener('click', () => {
+    filter(b.dataset.col!);
+    const el = document.getElementById('collection')!;
+    const lenis = (window as any).__lenis;
+    lenis ? lenis.scrollTo(el, { offset: -80 }) : el.scrollIntoView({ behavior: 'smooth' });
+  }));
+
+  // Quiz
+  const quiz = document.querySelector<HTMLElement>('[data-quiz]')!;
+  const models: { slug: string; name: string; spec: string; src: string }[] = JSON.parse(document.querySelector('[data-cards]')!.textContent || '[]');
+  const qs = [...quiz.querySelectorAll<HTMLElement>('[data-q]')];
+  const opts = [...quiz.querySelectorAll<HTMLElement>('[data-opts]')];
+  const dots = [...quiz.querySelectorAll<HTMLElement>('[data-dot]')];
+  const total = qs.length - 1;
+  const ans: Record<string, string> = {};
+  const multi: Record<string, string[]> = {};
+  let step = 0;
+  const show = (i: number) => {
+    step = i;
+    const key = i >= total ? 'result' : String(i);
+    qs.forEach((q) => (q.hidden = q.dataset.q !== key));
+    opts.forEach((o) => (o.hidden = o.dataset.opts !== key));
+    dots.forEach((d, k) => d.classList.toggle('on', k === i));
+  };
+  // TODO(client): confirm this mapping. Simple rules from the plans: 2 bedrooms -> 2BHK;
+  // pool -> 1BHK (it has a private pool); hot tub or a small plot -> Cottage.
+  const pick = () => {
+    if (ans.use === 'Resort') return { slug: '', why: 'For a resort we plan a group of Caves around your land. Tell us about it and we will suggest a mix.' };
+    if (ans.beds === 'Two') return { slug: '2bhk-villa', why: 'Two bedroom suites with one long living space between them.' };
+    const water = multi.water || [];
+    if (water.includes('A private pool')) return { slug: '1bhk-villa', why: 'One bedroom, an open living room and its own pool.' };
+    if (water.includes('A hot tub') || ans.plot === '150–300 sq yards') return { slug: 'cottage', why: 'A compact suite with a raised hot tub on its own deck.' };
+    return { slug: '1bhk-villa', why: 'One bedroom with room to live, cook and host.' };
+  };
+  const result = () => {
+    const p = pick();
+    const m = models.find((x) => x.slug === p.slug);
+    quiz.querySelector('[data-r-name]')!.textContent = m ? `The ${m.name}` : 'A Cave Co. resort';
+    quiz.querySelector('[data-r-why]')!.textContent = p.why;
+    const im = quiz.querySelector<HTMLImageElement>('[data-r-img]')!;
+    im.hidden = !m;
+    if (m) { im.src = m.src; im.alt = `${m.name} exterior`; }
+    const view = quiz.querySelector<HTMLAnchorElement>('[data-r-view]')!;
+    view.hidden = !m;
+    if (m) { view.href = `/models/${m.slug}`; view.textContent = `View the ${m.name}`; }
+    const q = new URLSearchParams({ model: m ? m.name : 'Resort', plot: ans.plot || '', when: ans.when || '',
+      note: [ans.use, ans.beds && ({ One: '1 bedroom', Two: '2 bedrooms' } as Record<string, string>)[ans.beds] || (ans.beds && 'bedrooms not sure'), (multi.water || []).join(' + ')].filter(Boolean).join(', ') });
+    quiz.querySelector<HTMLAnchorElement>('[data-r-send]')!.href = `/enquire?${q}`;
+  };
+  const next = () => { if (step + 1 >= total) result(); show(step + 1); };
+  quiz.querySelectorAll<HTMLButtonElement>('.opt').forEach((b) => b.addEventListener('click', () => {
+    if (b.parentElement!.classList.contains('multi')) {
+      const on = b.classList.toggle('on');
+      b.setAttribute('aria-pressed', String(on));
+      const k = b.dataset.k!;
+      multi[k] = [...b.parentElement!.querySelectorAll<HTMLButtonElement>('.opt.on')].map((o) => o.dataset.v!);
+      return;
+    }
+    ans[b.dataset.k!] = b.dataset.v!;
+    b.parentElement!.querySelectorAll('.opt').forEach((o) => o.classList.toggle('on', o === b));
+    setTimeout(next, 260);
+  }));
+  quiz.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', next));
+  quiz.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => show(Math.max(0, step - 1))));
+  quiz.querySelector('[data-restart]')!.addEventListener('click', () => {
+    Object.keys(ans).forEach((k) => delete ans[k]);
+    Object.keys(multi).forEach((k) => delete multi[k]);
+    quiz.querySelectorAll('.opt[aria-pressed]').forEach((o) => o.setAttribute('aria-pressed', 'false'));
+    quiz.querySelectorAll('.opt.on').forEach((o) => o.classList.remove('on'));
+    show(0);
+  });
+</script>

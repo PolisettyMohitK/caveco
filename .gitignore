@@ -7,3 +7,11 @@ dist/
 font-options.png
 *.log
 .env
+assets-client/
+
+# Cloudflare local dev
+.wrangler/
+.dev.vars
+
+# generated from CMS uploads at build
+public/_img/

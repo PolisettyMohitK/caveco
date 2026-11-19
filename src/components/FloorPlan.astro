@@ -1,0 +1,199 @@
+---
+// Floor plan walkthrough, drawn as you scroll. Everything comes from the architect's own plan
+// image, so the finished drawing is exactly the original:
+//   1. the empty house (walls only) draws itself in, then settles into the real wall drawing
+//   2. room by room, the camera leans in, the room's lines draw, and the original fades in there
+//   3. at the end it pulls back to the complete plan with all its dimensions and labels
+// Layers come from scripts/plan-layers.mjs (src/data/plan-lines.json). A plan without layers
+// (e.g. a new model added in the CMS) simply shows the plan and walks through its rooms.
+import { meta, pic } from '../data/media';
+import type { Room } from '../data/models';
+import planLines from '../data/plan-lines.json';
+interface Props { plan: string; rooms: Room[]; title?: string; area?: string }
+const { plan: planPath, rooms, title = 'The floor plan.', area } = Astro.props;
+const plan = meta(planPath);
+type Lines = { w: number; h: number; shell: string; widths: number[]; walls: string[]; rooms: string[][] };
+const found = (planLines as Record<string, Lines>)[planPath];
+// only use the layers if they were made for these exact rooms
+const lines = found && found.rooms.length === rooms.length ? found : undefined;
+const sizes = '(min-width: 900px) 60vw, 100vw';
+const full = pic(planPath, sizes);
+const shell = lines && {
+  src: `${lines.shell}-${lines.widths.find((w) => w >= 1400) ?? lines.widths[lines.widths.length - 1]}.webp`,
+  srcset: lines.widths.map((w) => `${lines.shell}-${w}.webp ${w}w`).join(', '),
+};
+const inset = (b: Room['box']) => `inset(${b[1]}% ${100 - b[0] - b[2]}% ${100 - b[1] - b[3]}% ${b[0]}%)`;
+---
+<section class:list={['fp', { drawn: !!lines }]} data-fp data-drawn={lines ? '1' : '0'} style={`--n:${rooms.length};--ar:${plan.w / plan.h}`}>
+  <div class="fp-sticky">
+    <div class="fp-head">
+      <h2 class="h-section">{title}</h2>
+      {area && <p class="fp-area">{area}</p>}
+    </div>
+    <div class="fp-body">
+      <div class="fp-stage">
+        <div class="fp-plan" data-fp-plan>
+          <div class="fp-zoom" data-fp-zoom>
+            {shell && <img class="fp-shell" data-fp-shell src={shell.src} srcset={shell.srcset} sizes={sizes} width={plan.w} height={plan.h} alt="" draggable="false" />}
+            {lines && rooms.map((r, i) => (
+              <div class="fp-fill" data-fp-fill={i} style={`clip-path:${inset(r.box)}`}><img {...full} alt="" draggable="false" /></div>
+            ))}
+            <img class="fp-full" data-fp-full {...full} alt={`Floor plan${area ? `, ${area}` : ''}`} draggable="false" />
+            {lines && (
+              <svg class="fp-ink" viewBox={`0 0 ${lines.w} ${lines.h}`} preserveAspectRatio="none" aria-hidden="true">
+                <g data-fp-walls>{lines.walls.map((d) => <path d={d} pathLength="1" />)}</g>
+                {lines.rooms.map((ps, i) => <g data-fp-ink={i}>{ps.map((d) => <path d={d} pathLength="1" />)}</g>)}
+              </svg>
+            )}
+            {rooms.map((r, i) => (
+              <div class="fp-room" data-fp-room={i} style={`left:${r.box[0]}%;top:${r.box[1]}%;width:${r.box[2]}%;height:${r.box[3]}%`}></div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <ol class="fp-list" role="list">
+        {rooms.map((r, i) => (
+          <li><button data-fp-item={i}><span class="fp-n">{String(i + 1).padStart(2, '0')}</span><span class="fp-name">{r.name}</span>{r.size && <span class="fp-size">{r.size}</span>}</button></li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .fp { position: relative; height: calc(100svh + var(--n) * 46svh + 60svh); }
+  .fp-sticky { position: sticky; top: var(--header-h); height: calc(100svh - var(--header-h)); display: grid; grid-template-rows: auto 1fr; gap: clamp(14px, 2vw, 24px);
+    padding: clamp(16px, 2.4vw, 32px) var(--gutter); box-sizing: border-box; }
+  .fp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .fp-head .h-section { margin: 0; color: var(--brown); font-weight: 700; letter-spacing: -0.035em; }
+  .fp-area { margin: 0; color: var(--grey); font-weight: 600; }
+  .fp-body { min-height: 0; display: grid; gap: clamp(16px, 2.4vw, 40px); }
+  @media (min-width: 900px) {
+    .fp-body { grid-template-columns: 1.7fr 1fr; }
+    /* the box hugs the plan's shape (wide plans don't float in a tall empty box) */
+    .fp-stage { align-self: center; width: 100%; aspect-ratio: calc(var(--ar) / 0.94); max-height: 100%; }
+  }
+
+  .fp-stage { min-height: 0; position: relative; border-radius: var(--r-xl); background: #f3eee8; overflow: hidden; container-type: size; display: grid; place-items: center; }
+  .fp-plan { position: relative; width: min(94cqw, 94cqh * var(--ar)); aspect-ratio: var(--ar); overflow: hidden; border-radius: 10px; }
+  .fp:not(.drawn) .fp-plan { clip-path: inset(0 100% 0 0); }
+  .fp-zoom { position: absolute; inset: 0; transition: transform 1.2s cubic-bezier(.32,.72,0,1); will-change: transform; }
+  .fp-zoom img, .fp-fill { position: absolute; inset: 0; width: 100%; height: 100%; display: block; max-width: none; user-select: none; }
+  .fp-fill img { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* Drawn mode: layers start hidden and are driven by scroll (opacity / dash offset vars) */
+  .drawn .fp-shell { opacity: var(--shell, 0); }
+  .drawn .fp-fill { opacity: 0; }
+  .drawn .fp-full { opacity: var(--full, 0); }
+  .fp-ink { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .fp-ink path { fill: none; stroke: var(--brown); stroke-width: 1.2px; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1 1; stroke-dashoffset: var(--d, 1); }
+  .fp-ink g { opacity: var(--o, 1); }
+
+  .fp-room { position: absolute; border-radius: 4px; opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+  .fp-room.on { opacity: 1; }
+  /* soften the rest of the plan so the current room reads first */
+  .fp-room::after { content: ''; position: absolute; inset: -2px; border-radius: 4px; box-shadow: 0 0 0 200vmax rgba(243, 238, 232, .5); }
+  .fp:not(.drawn) .fp-room { border: 2px solid var(--brown); background: rgba(90, 58, 36, .12); }
+
+  .fp-list { list-style: none; margin: 0; padding: 0; display: grid; align-content: center; gap: 2px; }
+  .fp-list button { width: 100%; display: grid; grid-template-columns: 2.4em 1fr auto; align-items: baseline; gap: 8px; text-align: left; padding: 10px 14px; border-radius: 14px;
+    color: var(--grey); transition: color .35s, background-color .35s; }
+  .fp-list button:hover { color: var(--ink); }
+  .fp-n { font-size: 13px; font-variant-numeric: tabular-nums; }
+  .fp-name { font-size: clamp(17px, 1.5vw, 21px); font-weight: 600; }
+  .fp-size { font-size: 14px; font-variant-numeric: tabular-nums; }
+  .fp-list button.on { color: var(--brown); background: var(--sand); }
+
+  /* Phones: plan on top, only the current room below it */
+  @media (max-width: 899px) {
+    .fp-body { grid-template-rows: auto auto; align-content: center; }
+    .fp-stage { aspect-ratio: var(--ar); max-height: 58svh; width: 100%; }
+    .fp-list { align-content: start; min-height: 64px; }
+    .fp-list li { display: none; }
+    .fp-list li:has(.on) { display: block; }
+    .fp-list button { padding: 14px 16px; }
+  }
+</style>
+
+<script>
+  import { ScrollTrigger } from '../scripts/motion';
+
+  const clamp = (v: number) => Math.max(0, Math.min(1, v));
+
+  document.querySelectorAll<HTMLElement>('[data-fp]').forEach((root) => {
+    const plan = root.querySelector<HTMLElement>('[data-fp-plan]')!;
+    const zoom = root.querySelector<HTMLElement>('[data-fp-zoom]')!;
+    const rooms = [...root.querySelectorAll<HTMLElement>('[data-fp-room]')];
+    const items = [...root.querySelectorAll<HTMLButtonElement>('[data-fp-item]')];
+    const drawn = root.dataset.drawn === '1';
+    const walls = root.querySelector<SVGGElement>('[data-fp-walls]');
+    const inks = [...root.querySelectorAll<SVGGElement>('[data-fp-ink]')];
+    const fills = [...root.querySelectorAll<HTMLElement>('[data-fp-fill]')];
+    const n = rooms.length;
+    const INTRO = 0.12;   // share of the scroll for the empty house drawing in
+    const OUTRO = 0.94;   // after this, pull back to the whole plan
+    const seg = (OUTRO - 0.03) / Math.max(1, n);
+    let at = -2;
+
+    const focus = (i: number) => {
+      if (i === at) return;
+      at = i;
+      rooms.forEach((r, k) => r.classList.toggle('on', k === i));
+      items.forEach((b, k) => b.classList.toggle('on', k === i));
+      if (i < 0) { zoom.style.transform = ''; return; }
+      const r = rooms[i];
+      const l = parseFloat(r.style.left), t = parseFloat(r.style.top), w = parseFloat(r.style.width), h = parseFloat(r.style.height);
+      // lean in so the room fills about 60% of the frame; capped so the drawing stays sharp
+      const cap = window.innerWidth < 900 ? 2.6 : 1.8;
+      const s = Math.max(1, Math.min(cap, 60 / Math.max(w, h)));
+      const cx = l + w / 2, cy = t + h / 2;
+      const tx = Math.max((1 - s) * 100, Math.min(0, 50 - cx * s));
+      const ty = Math.max((1 - s) * 100, Math.min(0, 50 - cy * s));
+      zoom.style.transformOrigin = '0 0';
+      zoom.style.transform = `translate(${tx}%, ${ty}%) scale(${s})`;
+    };
+
+    const set = (el: Element | null | undefined, k: string, v: number) => (el as HTMLElement | null)?.style.setProperty(k, v.toFixed(3));
+
+    const render = (p: number) => {
+      const intro = clamp(p / INTRO);
+      const q = clamp((p - INTRO) / (1 - INTRO));
+      if (!drawn) {
+        plan.style.clipPath = `inset(0 ${(1 - intro) * 100}% 0 0)`;
+      } else {
+        // 1) the empty house: lines draw, then the real wall drawing takes over
+        set(walls, '--d', 1 - clamp(intro / 0.75));
+        const shell = clamp((intro - 0.7) / 0.3);
+        set(root, '--shell', shell);
+        set(walls, '--o', 1 - shell);
+        // 2) each room: lines draw, then the original drawing of that room fades in
+        inks.forEach((g, i) => {
+          const local = (q - 0.03 - i * seg) / seg;
+          const draw = clamp(local / 0.6);
+          const fill = clamp((local - 0.55) / 0.3);
+          set(g, '--d', 1 - draw);
+          set(g, '--o', 1 - fill);
+          fills[i].style.opacity = fill.toFixed(3);
+        });
+        // 3) the complete plan with dimensions and labels
+        set(root, '--full', clamp((q - OUTRO) / (1 - OUTRO) * 1.6));
+      }
+      const idx = Math.floor((q - 0.03) / seg);
+      focus(q < 0.03 || q >= OUTRO ? -1 : Math.min(n - 1, idx));
+    };
+
+    const st = ScrollTrigger.create({
+      trigger: root, start: 'top top', end: 'bottom bottom', invalidateOnRefresh: true,
+      onUpdate: (self) => render(self.progress),
+    });
+    render(0);
+
+    items.forEach((b, i) => b.addEventListener('click', () => {
+      // land where that room has finished drawing
+      const q = 0.03 + (i + 0.92) * seg;
+      const p = INTRO + (1 - INTRO) * q;
+      (window as any).__lenis?.scrollTo(st.start + (st.end - st.start) * p);
+    }));
+  });
+</script>

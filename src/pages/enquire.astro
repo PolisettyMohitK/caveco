@@ -1,0 +1,173 @@
+---
+import Base from '../layouts/Base.astro';
+import { models } from '../data/models';
+import { site, waLink } from '../data/site';
+const choices = [...models.map((m) => m.name), 'Resort', 'Not sure yet'];
+---
+<Base title="Enquire" page="enquire" description="Tell Cave Co. about your land. We reply within a day, usually on WhatsApp.">
+  <section class="enq wrap">
+    <div class="enq-l">
+      <h1 class="h-display" data-reveal>Build your Cave.</h1>
+      <p class="lede" data-reveal data-delay="0.05">Tell us about your land and how you want to use it. We reply within a day, usually on WhatsApp.</p>
+      <dl class="contact" data-reveal data-delay="0.1">
+        <div><dt>Call</dt><dd>{site.phones.map((p) => <a href={`tel:${p.replace(/\s/g, '')}`}>{p}</a>)}</dd></div>
+        <div><dt>WhatsApp</dt><dd><a href={waLink()} target="_blank" rel="noopener">Message us</a></dd></div>
+        <div><dt>Visit</dt><dd>{site.hub.name}<br /><span>{site.hub.area}</span></dd></div>
+      </dl>
+    </div>
+
+    <div class="card" data-reveal data-delay="0.08">
+      <form class="form" data-form novalidate>
+        <div class="two">
+          <label class="f"><span>Name</span><input name="name" autocomplete="name" required /></label>
+          <label class="f"><span>Phone</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" required pattern="[0-9+\s\-]{10,15}" /></label>
+        </div>
+        <label class="f"><span>Email <em>(optional)</em></span><input name="email" type="email" autocomplete="email" /></label>
+        <label class="f"><span>Where is the land?</span><input name="location" placeholder="Village or town, district" required /></label>
+        <div class="two">
+          <label class="f"><span>Plot size</span>
+            <select name="plot">
+              <option value="">Select</option>
+              <option>150–300 sq yards</option><option>300–500 sq yards</option><option>500–1000 sq yards</option><option>Above 1000 sq yards</option><option>No land yet</option>
+            </select>
+          </label>
+          <label class="f"><span>When do you want to start?</span>
+            <select name="when">
+              <option value="">Select</option>
+              <option>Right away</option><option>In 3 months</option><option>In 6 months</option><option>Just exploring</option>
+            </select>
+          </label>
+        </div>
+        <fieldset class="chips">
+          <legend>Which Cave?</legend>
+          {choices.map((c, i) => (
+            <label><input type="radio" name="model" value={c} checked={i === choices.length - 1} /><span>{c}</span></label>
+          ))}
+        </fieldset>
+        <label class="f"><span>Anything else? <em>(optional)</em></span><textarea name="message" rows="3"></textarea></label>
+        <label class="check"><input type="checkbox" name="wa" checked /><span>Contact me on WhatsApp</span></label>
+        <!-- spam trap: hidden from people, bots fill it in -->
+        <label class="trap" aria-hidden="true">Company<input name="company" tabindex="-1" autocomplete="off" /></label>
+        <p class="err" data-err hidden>Please add your name, a valid phone number and where the land is.</p>
+        <button class="btn submit" type="submit" data-submit>Send enquiry</button>
+      </form>
+
+      <div class="done" data-done hidden>
+        <h2 class="h-section" data-done-title>Thank you.</h2>
+        <p class="lede" data-done-text>We will call you within a day. Want to talk now? Send this to us on WhatsApp.</p>
+        <a class="btn" href={waLink()} target="_blank" rel="noopener" data-wa>Open WhatsApp</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .h-display, .h-section { color: var(--brown); font-weight: 700; letter-spacing: -0.035em; margin: 0; }
+  .lede { color: var(--grey); margin: 0; }
+  .enq { display: grid; gap: clamp(28px, 4vw, 72px); padding-block: clamp(32px, 5vw, 80px) clamp(64px, 8vw, 120px); align-items: start; }
+  @media (min-width: 980px) { .enq { grid-template-columns: 1fr 1.15fr; } .enq-l { position: sticky; top: calc(var(--header-h) + 40px); } }
+  .enq-l { display: grid; gap: 18px; }
+  .enq-l .lede { max-width: 40ch; }
+  .contact { margin: 12px 0 0; display: grid; gap: 0; }
+  .contact div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .contact dt { color: var(--grey); font-size: 14px; }
+  .contact dd { margin: 0; display: grid; gap: 4px; font-weight: 600; color: var(--ink); }
+  .contact dd span { font-weight: 500; color: var(--grey); }
+  .contact a:hover { color: var(--brown); }
+
+  .card { background: var(--mist); border-radius: var(--r-xl); padding: clamp(22px, 3vw, 40px); }
+  .form { display: grid; gap: 18px; }
+  .two { display: grid; gap: 18px; }
+  @media (min-width: 560px) { .two { grid-template-columns: 1fr 1fr; gap: 12px; } }
+  .f { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .f em { font-style: normal; font-weight: 500; color: var(--grey); }
+  .f input, .f select, .f textarea {
+    font: inherit; font-size: 16px; font-weight: 500; color: var(--ink); min-height: 50px; padding: 0 16px;
+    background: #fff; border: 1px solid transparent; border-radius: 14px; outline: none; transition: border-color .3s, box-shadow .3s;
+    appearance: none; -webkit-appearance: none; box-sizing: border-box; width: 100%;
+  }
+  .f textarea { padding: 14px 16px; resize: vertical; }
+  .f select { background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='%235a3a24'/%3E%3C/svg%3E") right 16px center no-repeat; }
+  .f input:focus, .f select:focus, .f textarea:focus { border-color: var(--brown); box-shadow: 0 0 0 4px rgba(90, 58, 36, .1); }
+  .f input.bad { border-color: #b3261e; }
+  .chips { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips legend { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+  .chips label input { position: absolute; opacity: 0; }
+  .chips label span { display: inline-block; padding: 10px 16px; border-radius: 99px; background: #fff; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; transition: background-color .3s, color .3s; }
+  .chips label input:checked + span { background: var(--brown); color: #fff; }
+  .chips label input:focus-visible + span { outline: 2px solid var(--brown); outline-offset: 2px; }
+  .check { display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 500; }
+  .check input { accent-color: var(--brown); width: 18px; height: 18px; }
+  .err { color: #b3261e; font-size: 14px; margin: 0; }
+  .submit { justify-self: start; margin-top: 4px; }
+  .done { display: grid; gap: 16px; justify-items: start; }
+  .trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .submit[disabled] { opacity: .6; pointer-events: none; }
+  [hidden] { display: none !important; }
+</style>
+
+<script>
+  import { site, waLink } from '../data/site';
+
+  const form = document.querySelector<HTMLFormElement>('[data-form]')!;
+  const err = document.querySelector<HTMLElement>('[data-err]')!;
+  const startedAt = Date.now(); // spam check: bots submit instantly
+
+  // Coming from a model page: ?model=Cottage preselects it
+  const qp = new URLSearchParams(location.search);
+  const want = qp.get('model');
+  if (want) {
+    const r = [...form.querySelectorAll<HTMLInputElement>('input[name=model]')].find((x) => x.value.toLowerCase() === want.toLowerCase());
+    if (r) r.checked = true;
+  }
+  // Coming from the models quiz: plot, start time and a note with the other answers
+  (['plot', 'when'] as const).forEach((k) => {
+    const v = qp.get(k);
+    const sel = form.elements.namedItem(k) as HTMLSelectElement;
+    if (v && [...sel.options].some((o) => o.value === v || o.text === v)) sel.value = v;
+  });
+  const note = qp.get('note');
+  if (note) (form.elements.namedItem('message') as HTMLTextAreaElement).value = `From the quiz: ${note}`;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const req = ['name', 'phone', 'location'].map((n) => form.elements.namedItem(n) as HTMLInputElement);
+    let ok = true;
+    req.forEach((i) => { const v = i.checkValidity() && i.value.trim() !== ''; i.classList.toggle('bad', !v); if (!v) ok = false; });
+    err.hidden = ok;
+    if (!ok) { req.find((i) => i.classList.contains('bad'))?.focus(); return; }
+    const data = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+    const btn = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    btn.disabled = true; btn.textContent = 'Sending…';
+
+    // Lead goes to /api/enquire (Cloudflare Pages Function → D1 + email/webhook)
+    let src: Record<string, string> = {};
+    try { src = JSON.parse(sessionStorage.getItem('cave-src') || '{}'); } catch {}
+    let saved = false;
+    try {
+      const r = await fetch(site.enquiryEndpoint, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, wa: !!data.wa, t: startedAt, page: location.pathname + location.search, ...src }),
+      });
+      saved = r.ok;
+      if (r.status === 422) {
+        // server disagrees with a field: mark it and let them fix it
+        const d = await r.json().catch(() => ({ fields: [] }));
+        (d.fields || []).forEach((n: string) => (form.elements.namedItem(n) as HTMLInputElement | null)?.classList.add('bad'));
+        err.hidden = false; btn.disabled = false; btn.textContent = 'Send enquiry';
+        return;
+      }
+    } catch {}
+
+    const msg = `Hi Cave Co, I'm ${data.name}. Land: ${data.location}${data.plot ? ` (${data.plot})` : ''}. Interested in: ${data.model}.${data.when ? ` Start: ${data.when}.` : ''}${data.message ? ` ${data.message}` : ''}`;
+    document.querySelector<HTMLAnchorElement>('[data-wa]')!.href = waLink(msg);
+    if (!saved) {
+      // Never lose a lead silently: if saving failed, ask them to send it on WhatsApp
+      document.querySelector('[data-done-title]')!.textContent = 'Almost there.';
+      document.querySelector('[data-done-text]')!.textContent = "We couldn't send your details just now. Tap below to send them to us on WhatsApp instead, it's already written for you.";
+      document.querySelector<HTMLAnchorElement>('[data-wa]')!.textContent = 'Send on WhatsApp';
+    }
+    form.hidden = true;
+    document.querySelector<HTMLElement>('[data-done]')!.hidden = false;
+  });
+</script>

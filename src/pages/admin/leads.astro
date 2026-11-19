@@ -1,0 +1,193 @@
+---
+// Private leads inbox for the Cave Co. team. The page itself is public but empty; every lead
+// comes from /api/leads, which needs the ADMIN_TOKEN. Not linked anywhere, not indexed.
+import '@fontsource-variable/manrope';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Leads · Cave Co.</title>
+  <link rel="icon" href="/favicon.svg" />
+</head>
+<body>
+  <header class="top">
+    <strong class="logo">CAVE CO.</strong><span class="crumb">Leads</span>
+    <button class="link" data-logout hidden>Sign out</button>
+  </header>
+
+  <main>
+    <form class="login" data-login>
+      <h1>Leads</h1>
+      <p>Enter the team password to see website enquiries.</p>
+      <input type="password" name="token" autocomplete="current-password" placeholder="Password" required />
+      <button class="btn" type="submit">Open</button>
+      <p class="err" data-login-err hidden></p>
+    </form>
+
+    <section class="inbox" data-inbox hidden>
+      <div class="bar">
+        <div class="tabs" data-tabs>
+          <button class="on" data-status="">All <span data-count=""></span></button>
+          <button data-status="new">New <span data-count="new"></span></button>
+          <button data-status="contacted">Contacted <span data-count="contacted"></span></button>
+          <button data-status="closed">Closed <span data-count="closed"></span></button>
+        </div>
+        <div class="tools">
+          <input type="search" placeholder="Search name, phone, place, model" data-q />
+          <button class="btn ghost" data-refresh>Refresh</button>
+          <button class="btn" data-csv>Download CSV</button>
+        </div>
+      </div>
+      <p class="empty" data-empty hidden>No enquiries yet.</p>
+      <div class="list" data-list></div>
+    </section>
+  </main>
+
+  <style is:global>
+    :root { --brown: #5a3a24; --ink: #1e1c19; --grey: #6f6a64; --line: #e8e3dc; --mist: #f6f4f1; --sand: #f2eee9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Manrope Variable', system-ui, sans-serif; color: var(--ink); background: var(--mist); font-size: 15px; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; border: 0; background: none; color: inherit; }
+    [hidden] { display: none !important; }
+    .top { display: flex; align-items: center; gap: 12px; padding: 16px clamp(16px, 3vw, 32px); background: #fff; border-bottom: 1px solid var(--line); }
+    .logo { color: var(--brown); letter-spacing: -0.02em; font-weight: 800; }
+    .crumb { color: var(--grey); }
+    .link { margin-left: auto; color: var(--grey); font-weight: 600; }
+    main { padding: clamp(16px, 3vw, 32px); max-width: 1280px; margin: 0 auto; }
+    .btn { padding: 10px 18px; border-radius: 99px; background: var(--brown); color: #fff; font-weight: 600; white-space: nowrap; }
+    .btn.ghost { background: var(--sand); color: var(--brown); }
+    .login { max-width: 360px; margin: 10vh auto; display: grid; gap: 12px; background: #fff; padding: 28px; border-radius: 20px; }
+    .login h1 { margin: 0; color: var(--brown); }
+    .login p { margin: 0; color: var(--grey); }
+    input[type=password], input[type=search], select { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; outline: none; }
+    input:focus, select:focus { border-color: var(--brown); }
+    .err { color: #b3261e !important; }
+    .bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .tabs { display: flex; gap: 4px; background: #fff; padding: 4px; border-radius: 99px; }
+    .tabs button { padding: 8px 14px; border-radius: 99px; font-weight: 600; color: var(--grey); }
+    .tabs button.on { background: var(--brown); color: #fff; }
+    .tabs span { opacity: .7; font-variant-numeric: tabular-nums; }
+    .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tools input { width: min(320px, 100%); }
+    .empty { color: var(--grey); text-align: center; padding: 48px 0; }
+    .list { display: grid; gap: 10px; }
+    .lead { background: #fff; border-radius: 16px; padding: 16px 18px; display: grid; gap: 10px; grid-template-columns: 1fr auto; }
+    .lead.new { box-shadow: inset 3px 0 0 var(--brown); }
+    .who { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+    .who strong { font-size: 17px; }
+    .who a { color: var(--brown); font-weight: 600; text-decoration: none; }
+    .who a:hover { text-decoration: underline; }
+    .when { color: var(--grey); font-size: 13px; }
+    .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+    .meta span { padding: 4px 10px; border-radius: 99px; background: var(--sand); font-size: 13px; }
+    .msg { grid-column: 1 / -1; margin: 0; color: var(--grey); white-space: pre-wrap; }
+    .src { grid-column: 1 / -1; color: var(--grey); font-size: 12px; }
+    .lead select { min-height: 36px; }
+    @media (max-width: 600px) { .lead { grid-template-columns: 1fr; } }
+  </style>
+
+  <script>
+    type Lead = Record<string, string | number | null> & { id: string; status: string; name: string; phone: string; created_at: string };
+    const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
+    const login = $<HTMLFormElement>('[data-login]');
+    const inbox = $('[data-inbox]');
+    const list = $('[data-list]');
+    const loginErr = $('[data-login-err]');
+    const q = $<HTMLInputElement>('[data-q]');
+    let token = '';
+    let leads: Lead[] = [];
+    let status = '';
+
+    // Keep the password for this browser tab only
+    try { token = sessionStorage.getItem('cave-admin') || ''; } catch {}
+    const save = (t: string) => { try { t ? sessionStorage.setItem('cave-admin', t) : sessionStorage.removeItem('cave-admin'); } catch {} };
+
+    const api = (path: string, init: RequestInit = {}) =>
+      fetch(path, { ...init, headers: { ...(init.headers || {}), authorization: `Bearer ${token}` } });
+
+    const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+    const fmt = (iso: string) => new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+
+    const render = () => {
+      const term = q.value.trim().toLowerCase();
+      const shown = leads.filter((l) => (!status || l.status === status) &&
+        (!term || [l.name, l.phone, l.location, l.model].some((v) => String(v ?? '').toLowerCase().includes(term))));
+      document.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
+        const s = el.dataset.count;
+        el.textContent = String(leads.filter((l) => !s || l.status === s).length);
+      });
+      $('[data-empty]').hidden = shown.length > 0;
+      list.innerHTML = shown.map((l) => {
+        const digits = l.phone.replace(/\D/g, '');
+        const chips = [l.model, l.plot, l.start_when, l.location].filter(Boolean).map((c) => `<span>${esc(c)}</span>`).join('');
+        const src = [l.utm_source, l.utm_medium, l.utm_campaign].filter(Boolean).join(' / ') || l.referrer || '';
+        return `<article class="lead ${esc(l.status)}">
+          <div class="who"><strong>${esc(l.name)}</strong>
+            <a href="tel:${esc(l.phone)}">${esc(l.phone)}</a>
+            <a href="https://wa.me/${esc(digits)}" target="_blank" rel="noopener">WhatsApp${l.whatsapp ? '' : ' (not preferred)'}</a>
+            ${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ''}
+            <span class="when">${esc(fmt(l.created_at))}</span></div>
+          <select data-id="${esc(l.id)}" aria-label="Status">
+            ${['new', 'contacted', 'closed'].map((s) => `<option value="${s}" ${s === l.status ? 'selected' : ''}>${s[0].toUpperCase() + s.slice(1)}</option>`).join('')}
+          </select>
+          <div class="meta">${chips}</div>
+          ${l.message ? `<p class="msg">${esc(l.message)}</p>` : ''}
+          <div class="src">${esc([l.page && `Page: ${l.page}`, src && `Source: ${src}`, [l.city, l.country].filter(Boolean).join(', ')].filter(Boolean).join(' · '))}</div>
+        </article>`;
+      }).join('');
+    };
+
+    const load = async () => {
+      const r = await api('/api/leads');
+      if (r.status === 401) { signOut('Wrong password.'); return; }
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { signOut(d.error === 'db_not_configured' ? 'The leads database is not connected yet.' : d.error === 'admin_not_configured' ? 'No team password is set on the server yet.' : 'Could not load leads.'); return; }
+      leads = d.leads;
+      login.hidden = true; inbox.hidden = false; $('[data-logout]').hidden = false;
+      render();
+    };
+    const signOut = (msg = '') => {
+      token = ''; save('');
+      login.hidden = false; inbox.hidden = true; $('[data-logout]').hidden = true;
+      loginErr.textContent = msg; loginErr.hidden = !msg;
+    };
+
+    login.addEventListener('submit', (e) => {
+      e.preventDefault();
+      token = (login.elements.namedItem('token') as HTMLInputElement).value.trim();
+      save(token);
+      load();
+    });
+    $('[data-logout]').addEventListener('click', () => signOut());
+    $('[data-refresh]').addEventListener('click', load);
+    q.addEventListener('input', render);
+    $('[data-tabs]').addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button');
+      if (!b) return;
+      status = b.dataset.status || '';
+      document.querySelectorAll('[data-tabs] button').forEach((x) => x.classList.toggle('on', x === b));
+      render();
+    });
+    list.addEventListener('change', async (e) => {
+      const s = e.target as HTMLSelectElement;
+      if (!s.dataset.id) return;
+      const r = await api('/api/leads', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: s.dataset.id, status: s.value }) });
+      if (r.ok) { const l = leads.find((x) => x.id === s.dataset.id); if (l) l.status = s.value; render(); }
+      else alert('Could not update the status.');
+    });
+    $('[data-csv]').addEventListener('click', async () => {
+      const r = await api(`/api/leads?format=csv${status ? `&status=${status}` : ''}`);
+      if (!r.ok) { alert('Could not download.'); return; }
+      const url = URL.createObjectURL(await r.blob());
+      const a = Object.assign(document.createElement('a'), { href: url, download: `cave-co-leads-${new Date().toISOString().slice(0, 10)}.csv` });
+      a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    if (token) load();
+  </script>
+</body>
+</html>
