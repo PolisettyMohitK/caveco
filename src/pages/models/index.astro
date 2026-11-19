@@ -121,8 +121,9 @@ const cards = models.map((m) => ({ slug: m.slug, name: m.name, spec: specLine(m)
   .center { text-align: center; }
   .lede { color: var(--grey); }
 
-  .hero { padding: clamp(8px, 1vw, 16px) var(--edge) 0; }
-  .hero-img { position: relative; max-width: 2560px; margin: 0 auto; height: min(72svh, 760px); min-height: 420px; border-radius: var(--r-xl); overflow: hidden; display: grid; place-items: center; background: var(--sand); }
+  /* Full bleed, edge to edge */
+  .hero { padding: 0; }
+  .hero-img { position: relative; height: min(72svh, 760px); min-height: 420px; overflow: hidden; display: grid; place-items: center; background: var(--sand); }
   .hero-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .hero-img::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(24,16,10,.5), rgba(24,16,10,.15) 70%); }
   .hero-img .h-display { position: relative; z-index: 1; margin: 0; padding: 0 var(--pad); text-align: center; color: #fff; text-wrap: balance; font-size: clamp(32px, 4.6vw, 68px); line-height: 1.08; }
@@ -182,7 +183,7 @@ const cards = models.map((m) => ({ slug: m.slug, name: m.name, spec: specLine(m)
   [hidden] { display: none !important; }
 
   .faq { display: grid; gap: 32px; }
-  .faq-l { display: grid; gap: 14px; justify-items: start; align-content: start; }
+  .faq-l { display: grid; gap: 14px; justify-items: start; align-content: center; align-self: center; }
   .faq-l .h-section, .faq-l .lede { margin: 0; }
   @media (min-width: 1000px) { .faq { grid-template-columns: 1fr 1.4fr; gap: 64px; } }
 </style>

@@ -61,7 +61,7 @@ export function carousel(root: HTMLElement, opts: Opts = {}) {
   };
 
   // ---- Drag / swipe ----
-  const off = () => root.hasAttribute('data-off'); // e.g. when the row is scroll-driven instead
+  const off = () => root.hasAttribute('data-off') || root.hasAttribute('data-fits'); // e.g. when the row is scroll-driven instead
   root.addEventListener('pointerdown', (e) => {
     if (off()) return;
     if ((e.target as Element).closest('button, a, input')) return;
@@ -127,7 +127,15 @@ export function carousel(root: HTMLElement, opts: Opts = {}) {
   root.querySelector('[data-prev]')?.addEventListener('click', () => go(index - 1));
   root.querySelector('[data-next]')?.addEventListener('click', () => go(index + 1));
   dots?.querySelectorAll('button').forEach((d, k) => d.addEventListener('click', () => go(k)));
-  window.addEventListener('resize', () => { if (off()) return; x = target = stops().list[index]; paint(); });
+  // When every card fits on screen there is nothing to slide: the row is laid out evenly (CSS
+  // [data-fits]) and dragging and the arrows switch off.
+  const fit = () => {
+    const fits = track.scrollWidth <= root.clientWidth + 1;
+    root.toggleAttribute('data-fits', fits);
+    if (fits) { x = target = v = 0; paint(); }
+  };
+  fit();
+  window.addEventListener('resize', () => { fit(); if (off()) return; x = target = stops().list[index]; paint(); });
 
   index = -1; setIndex(0);
   return { go, get index() { return index; } };

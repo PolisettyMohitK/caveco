@@ -15,29 +15,43 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   <section class="hero">
     <div class="stage" data-hero>
       <img class="h-bg" {...render(4)} alt="A Cave Co. stone farmhouse at golden hour" fetchpriority="high" data-h-bg />
-      <span class="stamp" aria-hidden="true" data-stamp>CAVE CO.</span>
+      <!-- outer span places the word (CSS translate), inner span is the one GSAP moves; keeping them
+           apart stops GSAP from freezing the centring in pixels before the font has loaded -->
+      <span class="stamp" aria-hidden="true"><span class="stamp-in" data-stamp>CAVE CO.</span></span>
       <img class="h-fg" src="/media/2bhk/ext-4-fg.webp" width="1774" height="887" alt="" aria-hidden="true" data-h-fg />
       <HeroLife />
     </div>
-    <div class="hero-copy">
+  </section>
+
+  <!-- ============ Intro + About, framed by two timber columns ============ -->
+  <section class="intro" id="about">
+    <img class="pillar l" src="/media/wood/timber-a.webp" width="370" height="890" alt="" aria-hidden="true" loading="lazy" />
+    <img class="pillar r" src="/media/wood/timber-b.webp" width="370" height="890" alt="" aria-hidden="true" loading="lazy" />
+    <div class="wrap">
       <h1 class="h-display" data-reveal>{home.hero.title}</h1>
-      <div class="hero-side" data-reveal data-delay="0.1">
-        <p class="lede">{home.hero.text}</p>
-        <div class="row">
-          <button class="btn" data-enquire>Build a farmhouse</button>
-          <a class="btn ghost" href="#resort">Build a resort</a>
+      <div class="about">
+        <div class="about-main">
+          <p class="about-k" data-reveal>About Cave Co.</p>
+          <p class="about-t" data-reveal data-delay="0.05">
+            We design, make and install farmhouses around Hyderabad and across Telangana. One team takes your home
+            from the first sketch to the keys, so owning land finally means owning a place to stay on it.
+          </p>
+        </div>
+        <div class="intro-r">
+          <figure class="intro-img" data-reveal>
+            <img {...pic('/media/orion/photo-28-2560.webp', '(min-width: 900px) 40vw, 100vw')} alt="The covered terrace at Orion, a finished Cave Co. home" loading="lazy" />
+            <figcaption>Orion, Chilkur</figcaption>
+          </figure>
+          <div class="hero-side" data-reveal data-delay="0.1">
+            <p class="lede">{home.hero.text}</p>
+            <div class="row">
+              <button class="btn" data-enquire>Build a farmhouse</button>
+              <a class="btn ghost" href="#resort">Build a resort</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
-
-  <!-- ============ About ============ -->
-  <section class="about wrap" id="about">
-    <p class="about-k" data-reveal>About Cave Co.</p>
-    <p class="about-t" data-reveal data-delay="0.05">
-      We design, make and install farmhouses around Hyderabad and across Telangana. One team takes your home
-      from the first sketch to the keys, so owning land finally means owning a place to stay on it.
-    </p>
   </section>
 
   <!-- ============ Highlights ============ -->
@@ -78,7 +92,7 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
     <h2 class="h-section wrap" data-reveal>Take a closer look.</h2>
 
     <!-- Desktop: pills on the left, photo opens to the full panel -->
-    <div class="cl wrap">
+    <div class="cl">
       <div class="cl-stage" data-cl data-state="idle">
         <div class="cl-media" aria-hidden="true">
           <img class="cl-img is-on" data-idle {...render(5, '(min-width: 1200px) 1100px, 100vw')} alt="" style="--fx:50%;--fy:50%;--z:1" />
@@ -224,8 +238,8 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   <!-- ============ Promise ============ -->
   <section class="sec">
     <h2 class="h-section wrap" data-reveal>{promises.title}</h2>
-    <div class="car" data-carousel>
-      <div class="car-track" data-track>
+    <div class="wrap">
+      <div class="promises" style={`--n:${promises.items.length}`} data-reveal>
         {promises.items.map((p) => <div class="promise"><p><b>{p.bold}</b> {p.text}</p></div>)}
       </div>
     </div>
@@ -250,22 +264,49 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   .head .h-section { margin: 0; }
 
   /* ---------- Hero ---------- */
-  .hero { padding: clamp(12px, 1.6vw, 20px) var(--edge) 0; }
+  /* Full bleed: the hero runs edge to edge under the header on every page */
+  .hero { padding: 0; }
   /* Never wider than the render's own pixels, so it always stays sharp */
-  .stage { position: relative; max-width: 1774px; margin: 0 auto; aspect-ratio: 2 / 1; border-radius: var(--r-xl); overflow: hidden; container-type: inline-size; background: var(--sand); }
+  .stage { position: relative; aspect-ratio: 2 / 1; overflow: hidden; container-type: inline-size; background: var(--sand); }
   .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; max-width: none; }
   .h-fg { z-index: 2; pointer-events: none; }
+  .stamp-in { display: block; }
   .stamp {
     position: absolute; z-index: 1; left: 50%; top: 37%; translate: -50% -100%;
     font-family: var(--logo); font-weight: 800; letter-spacing: -0.045em; line-height: .8; white-space: nowrap;
     font-size: 21cqw; color: var(--brown);
     padding-bottom: .02em;
   }
-  .hero-copy { display: grid; gap: 20px; padding: clamp(24px, 3.4vw, 48px) calc(var(--gutter) - var(--edge)) clamp(16px, 2vw, 24px); }
-  .hero-copy .h-display { margin: 0; }
-  .hero-side { display: grid; gap: 22px; align-content: end; }
   .lede { color: var(--grey); }
-  @media (min-width: 900px) { .hero-copy { grid-template-columns: 1.2fr 1fr; align-items: end; } }
+
+  /* ---------- Intro + About: two timber columns stand in the gutters, top to bottom ---------- */
+  .intro { position: relative; padding-block: clamp(24px, 3.4vw, 48px) 0; }
+  .intro .h-display { margin: 0; }
+  /* Timber posts: they start flush under the hero photo, as if holding it up, and stand at the screen edges */
+  .pillar { position: absolute; top: 0; height: 100%; width: clamp(18px, calc(var(--gutter) - clamp(14px, 1.8vw, 28px)), 200px);
+    object-fit: cover; max-width: none; border-radius: 0; }
+  .pillar.l { left: 0; }
+  .pillar.r { right: 0; }
+  @media (max-width: 899px) { .pillar { display: none; } }
+  .about { padding-top: clamp(20px, 2.4vw, 36px); display: grid; gap: clamp(28px, 3vw, 40px); }
+  .about-main { display: grid; gap: 16px; }
+  .hero-side { display: grid; gap: 22px; align-content: end; }
+  /* Right column: a real Orion photo fills the space, the pitch sits level with the end of the About text */
+  .intro-r { display: grid; gap: clamp(24px, 2.6vw, 36px); }
+  .intro-img { position: relative; margin: 0; aspect-ratio: 3 / 2; border-radius: var(--r-lg); overflow: hidden; background: var(--sand); }
+  .intro-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 55%; }
+  .intro-img figcaption { position: absolute; left: 12px; bottom: 12px; padding: 5px 11px; border-radius: 99px; font-size: 12px; font-weight: 600; color: var(--ink);
+    background: rgba(246, 242, 237, .78); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  /* Wide screens: heading and About on the left, the pitch and buttons in the right column,
+     centred between the heading and the About paragraph */
+  @media (min-width: 900px) {
+    .intro > .wrap { display: grid; grid-template-columns: 1.35fr 1fr; column-gap: clamp(40px, 5vw, 96px); }
+    .about { display: contents; }
+    .intro .h-display { grid-area: 1 / 1; }
+    .about-main { grid-area: 2 / 1; padding-top: clamp(20px, 2.4vw, 36px); }
+    .intro-r { grid-area: 1 / 2 / 3 / 3; grid-template-rows: minmax(0, 1fr) auto; }
+    .intro-img { aspect-ratio: auto; min-height: 220px; }
+  }
   @media (max-width: 700px) {
     /* Taller crop on phones; stamp and cut-out share the same crop so they stay aligned */
     .stage { aspect-ratio: 4 / 5; }
@@ -274,14 +315,13 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   }
 
   /* ---------- About ---------- */
-  .about { padding-block: clamp(56px, 8vw, 112px) 0; display: grid; gap: 16px; }
   .about-k { margin: 0; font-weight: 600; color: var(--brown); }
   .about-t { margin: 0; font-size: clamp(22px, 2.6vw, 36px); line-height: 1.3; letter-spacing: -0.02em; font-weight: 500; max-width: 30ch; color: var(--ink); }
 
   /* ---------- Carousels (shared) ---------- */
   .car { overflow: hidden; cursor: grab; user-select: none; }
   .car:active { cursor: grabbing; }
-  .car-track { display: flex; gap: clamp(12px, 1.4vw, 20px); padding-inline: var(--gutter); will-change: transform; }
+  .car-track { display: flex; gap: clamp(12px, 1.4vw, 20px); padding-inline: var(--edge); will-change: transform; }
   .car-track > * { flex: none; }
   .car img { -webkit-user-drag: none; }
   .car-ctrl { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
@@ -306,13 +346,14 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   @media (max-width: 700px) { .band-in { aspect-ratio: 4 / 5; } .band-in img { object-position: 30% 50%; } }
 
   /* ---------- Closer look: desktop viewer ---------- */
-  .cl-stage { position: relative; aspect-ratio: 2.05 / 1; max-height: 640px; width: 100%; border-radius: 28px; background: var(--sand); overflow: hidden; isolation: isolate; --e: cubic-bezier(.32,.72,0,1); }
+  .cl { padding-inline: var(--edge); }
+  .cl-stage { position: relative; aspect-ratio: 2.05 / 1; max-height: 760px; width: 100%; max-width: 1947px; margin: 0 auto; border-radius: var(--r-xl); background: var(--sand); overflow: hidden; isolation: isolate; --e: cubic-bezier(.32,.72,0,1); }
   .cl-media { position: absolute; inset: 0; clip-path: inset(7% 4% 7% 33% round 22px); transition: clip-path .9s var(--e); }
   .cl-stage[data-state="open"] .cl-media { clip-path: inset(0 0 0 0 round 0px); }
   .cl-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; max-width: none;
     transform-origin: var(--fx) var(--fy); transform: scale(calc(var(--z) * 1.04)); transition: opacity .7s ease, transform 1.3s var(--e); }
   .cl-img.is-on { opacity: 1; transform: scale(var(--z)); }
-  .cl-list { position: absolute; z-index: 2; left: 64px; top: 50%; translate: 0 -50%; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 340px; }
+  .cl-list { position: absolute; z-index: 2; left: max(64px, calc(var(--gutter) - var(--edge))); top: 50%; translate: 0 -50%; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 340px; }
   .cl-item { border-radius: 28px; overflow: hidden; background: #ebe5dd; transition: background-color .5s ease; }
   .cl-stage[data-state="open"] .cl-item { background: rgba(246, 242, 237, .66); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); }
   .cl-pill { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 22px 0 14px; font-size: 16px; font-weight: 600; white-space: nowrap; color: var(--ink); }
@@ -345,7 +386,9 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   @media (max-width: 760px) { .cl { display: none; } .cl-m { display: block; } }
 
   /* ---------- Models ---------- */
-  .model { position: relative; display: block; width: min(420px, 80vw); aspect-ratio: 4 / 4.4; border-radius: var(--r-lg); overflow: hidden; background: var(--sand); color: #fff; }
+  /* Cards grow to share the row edge to edge when they all fit; otherwise they keep their size and slide */
+  .car-track > .model { flex: 1 0 min(420px, 80vw); }
+  .model { position: relative; display: block; width: auto; height: max(calc(min(420px, 80vw) * 1.1), min(30vw, 600px)); border-radius: var(--r-lg); overflow: hidden; background: var(--sand); color: #fff; }
   .model img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.32,.72,0,1); }
   .model:hover img { transform: scale(1.04); }
   .model::after { content: ''; position: absolute; inset: 40% 0 0; background: linear-gradient(180deg, rgba(30,20,12,0), rgba(30,20,12,.62)); }
@@ -391,7 +434,7 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   .proc-list button em { display: block; max-height: 0; overflow: hidden; font-style: normal; font-size: 15px; color: var(--grey); padding-left: 1.6em; opacity: 0; transition: max-height .5s cubic-bezier(.32,.72,0,1), opacity .4s, margin .4s; }
   .proc-list button.on { color: var(--brown); font-weight: 700; }
   .proc-list button.on em { max-height: 4em; opacity: 1; margin-top: 6px; font-weight: 500; }
-  .proc-media { position: relative; min-height: 320px; display: grid; place-items: center; }
+  .proc-media { position: relative; min-height: 320px; display: grid; place-items: end center; padding-bottom: clamp(18px, 2.4vw, 32px); }
   .proc-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .7s ease; }
   .proc-media img.on { opacity: 1; }
   .proc-media img.plan { object-fit: contain; background: #f3eee9; padding: 6%; box-sizing: border-box; }
@@ -412,12 +455,16 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   }
 
   /* ---------- Promise ---------- */
-  .promise { width: min(360px, 78vw); padding: 28px; border-radius: var(--r-lg); background: var(--sand); }
+  .promises { display: grid; gap: clamp(12px, 1.4vw, 20px); }
+  @media (min-width: 760px) { .promises { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); } }
+  .promise { padding: clamp(24px, 2.4vw, 36px); border-radius: var(--r-lg); background: var(--sand); }
   .promise p { margin: 0; font-size: 18px; line-height: 1.45; color: #4a3a2e; }
   .promise b { color: var(--brown); }
 
   /* ---------- Resort ---------- */
-  .resort { display: grid; justify-items: start; gap: 18px; padding-bottom: clamp(72px, 9vw, 128px); }
+  .resort { display: grid; justify-items: center; text-align: center; gap: 20px; padding-bottom: clamp(72px, 9vw, 128px); }
+  .resort .lede { margin-inline: auto; }
+  .resort .btn { height: 60px; padding: 0 36px; font-size: 17px; margin-top: 8px; }
   .resort .h-section { margin: 0; }
 </style>
 
@@ -426,10 +473,12 @@ const models = range.map((m) => ({ name: m.name, line: m.line || m.blurb, image:
   import { carousel } from '../scripts/carousel';
 
   // ---- Hero: a gentle depth shift as you scroll (back moves more than front) ----
+  // The photo and its cut-out roof always scale together, so their roof lines never split apart.
+  // The stamp's entrance uses y (px) and its scroll drift uses yPercent, so the two never fight.
   gsap.timeline({ scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: 0.6 } })
-    .fromTo('[data-h-bg]', { scale: 1.04 }, { scale: 1, ease: 'none' }, 0)
+    .fromTo(['[data-h-bg]', '[data-h-fg]'], { scale: 1.04 }, { scale: 1, ease: 'none', transformOrigin: '50% 50%' }, 0)
     .fromTo('[data-stamp]', { yPercent: 0 }, { yPercent: 18, ease: 'none' }, 0);
-  gsap.from('[data-stamp]', { yPercent: 40, opacity: 0, duration: 1.4, ease: 'power3.out', delay: 0.2 });
+  gsap.from('[data-stamp]', { y: 80, opacity: 0, duration: 1.4, ease: 'power3.out', delay: 0.2 });
 
   // ---- Carousels ----
   document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((el) => carousel(el));

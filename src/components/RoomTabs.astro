@@ -33,14 +33,14 @@ const { rooms, name, title = 'Inside.' } = Astro.props;
     transition: opacity 1s cubic-bezier(.32,.72,0,1), transform 1.6s cubic-bezier(.32,.72,0,1); -webkit-user-drag: none; }
   .rt-img.on { opacity: 1; transform: none; }
 
-  .rt-tabs { position: absolute; top: clamp(12px, 1.6vw, 22px); left: 50%; transform: translateX(-50%); max-width: calc(100% - 24px);
+  .rt-tabs { position: absolute; bottom: clamp(12px, 1.6vw, 22px); left: 50%; transform: translateX(-50%); max-width: calc(100% - 24px);
     display: flex; gap: 2px; padding: 4px; border-radius: 14px; overflow-x: auto; scrollbar-width: none;
     background: rgba(70, 60, 52, .38); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
   .rt-tabs::-webkit-scrollbar { display: none; }
   .rt-tab { flex: none; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; color: rgba(255,255,255,.72); white-space: nowrap; transition: color .4s, background-color .4s; }
   .rt-tab:hover { color: #fff; }
   .rt-tab.on { color: #fff; background: rgba(255,255,255,.18); }
-  .rt-count { position: absolute; right: 16px; bottom: 14px; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; color: #fff;
+  .rt-count { position: absolute; right: 16px; top: 14px; padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; color: #fff;
     background: rgba(40, 30, 24, .35); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-variant-numeric: tabular-nums; }
 </style>
 

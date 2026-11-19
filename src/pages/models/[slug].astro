@@ -14,7 +14,6 @@ export function getStaticPaths() {
 const { slug } = Astro.params;
 const m = models.find((x) => x.slug === slug)!;
 const others = models.filter((x) => x.slug !== m.slug);
-const hero = meta(m.hero);
 const specs = included.map((g) => ({ q: g.title, a: g.items }));
 const enquire = `/enquire?model=${encodeURIComponent(m.name)}`;
 // TODO(client): price per model. Shown as a placeholder until set.
@@ -31,8 +30,8 @@ const lookList = ['Product details', 'Floor plan', 'Specifications', 'Material s
 
   <!-- Hero: render with the name, spec and price set on it -->
   <section class="hero">
-    <div class="hero-img" style={`max-width:${hero.w}px`}>
-      <img {...pic(m.hero, `(min-width: ${hero.w}px) ${hero.w}px, 100vw`)} alt={`${m.name}, ${m.exteriors[0].label.toLowerCase()}`} fetchpriority="high" data-hero-img />
+    <div class="hero-img">
+      <img {...pic(m.hero, '100vw')} alt={`${m.name}, ${m.exteriors[0].label.toLowerCase()}`} fetchpriority="high" data-hero-img />
       <div class="hero-copy">
         <div>
           <h1 class="h-display">{m.name}</h1>
@@ -41,7 +40,7 @@ const lookList = ['Product details', 'Floor plan', 'Specifications', 'Material s
         <p class="price" title={m.price ? undefined : 'Price coming soon'}>{price}</p>
       </div>
     </div>
-    <div class="hero-btns" style={`max-width:${hero.w}px`}>
+    <div class="hero-btns">
       <a class="btn big" href={enquire}>Configure your Cave</a>
       <a class="btn big soft" href={brochureHref} target={brochure ? undefined : '_blank'} rel="noopener" download={brochure ? 'Cave-Co-Brochure.pdf' : undefined}>{brochureLabel}</a>
     </div>
@@ -153,17 +152,18 @@ const lookList = ['Product details', 'Floor plan', 'Specifications', 'Material s
   .back:hover { color: var(--brown); }
   .back svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
-  .hero { padding-inline: var(--edge); }
-  .hero-img { position: relative; margin: 0 auto; aspect-ratio: 2 / 1; border-radius: var(--r-xl); overflow: hidden; background: var(--sand); }
+  /* Full bleed, edge to edge */
+  .hero { padding-inline: 0; }
+  .hero-img { position: relative; aspect-ratio: 2 / 1; max-height: calc(100svh - var(--header-h)); width: 100%; overflow: hidden; background: var(--sand); }
   .hero-img img { width: 100%; height: 100%; object-fit: cover; }
   .hero-img::after { content: ''; position: absolute; inset: 45% 0 0; background: linear-gradient(to top, rgba(28, 20, 14, .62), rgba(28, 20, 14, 0)); pointer-events: none; }
   @media (max-width: 700px) { .hero-img { aspect-ratio: 4 / 5; } }
   .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
-    padding: clamp(18px, 3vw, 44px) calc(var(--gutter) - var(--edge)); color: #fff; }
+    padding: clamp(18px, 3vw, 44px) var(--gutter); color: #fff; }
   .hero-copy .h-display { margin: 0; color: #fff; text-transform: uppercase; letter-spacing: -0.02em; }
   .spec { margin: 6px 0 0; font-weight: 600; color: rgba(255,255,255,.82); }
   .price { margin: 0; font-size: clamp(24px, 2.8vw, 40px); font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
-  .hero-btns { margin: clamp(12px, 1.4vw, 20px) auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 1.2vw, 16px); }
+  .hero-btns { margin: clamp(12px, 1.4vw, 20px) 0 0; padding-inline: var(--gutter); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(8px, 1.2vw, 16px); }
   .btn.big { justify-content: center; min-height: 54px; }
   @media (max-width: 520px) { .hero-btns { grid-template-columns: 1fr; } }
 
@@ -175,7 +175,7 @@ const lookList = ['Product details', 'Floor plan', 'Specifications', 'Material s
   /* Carousels: edge to edge, like the landing page */
   .car { overflow: hidden; cursor: grab; user-select: none; }
   .car:active { cursor: grabbing; }
-  .car-track { display: flex; gap: clamp(12px, 1.4vw, 20px); padding-inline: var(--gutter); will-change: transform; }
+  .car-track { display: flex; gap: clamp(12px, 1.4vw, 20px); padding-inline: var(--edge); will-change: transform; }
   .car-track > * { flex: none; }
   .car img { -webkit-user-drag: none; }
   .car-ctrl { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
@@ -201,13 +201,18 @@ const lookList = ['Product details', 'Floor plan', 'Specifications', 'Material s
   .pill { padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; color: #fff; background: rgba(60, 50, 44, .62); }
 
   .look { display: grid; gap: clamp(24px, 4vw, 64px); align-items: center; }
-  @media (min-width: 900px) { .look { grid-template-columns: 1.1fr 1fr; } }
+  @media (min-width: 900px) { .look { grid-template-columns: 1fr 1fr; } }
   .look-img { aspect-ratio: 4 / 3.4; border-radius: var(--r-xl); overflow: hidden; background: var(--sand); }
   .look-img img { width: 100%; height: 100%; object-fit: cover; }
-  .look-copy { display: grid; gap: 16px; justify-items: start; }
+  /* The copy fills its whole column up to the right gutter */
+  .look-copy { display: grid; gap: clamp(18px, 2vw, 28px); }
   .look-copy .h-section { margin: 0; }
-  .look-copy ul { margin: 0; padding: 0 0 0 18px; color: var(--ink); display: grid; gap: 6px; }
-  .look-copy li::marker { color: var(--brown); }
+  .look-copy .lede { max-width: none; font-size: clamp(18px, 1.5vw, 22px); }
+  .look-copy ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); border-top: 1px solid var(--line); }
+  .look-copy li { display: flex; align-items: center; gap: 12px; padding: clamp(14px, 1.4vw, 20px) 0; border-bottom: 1px solid var(--line); font-size: clamp(16px, 1.3vw, 19px); font-weight: 600; color: var(--ink); }
+  .look-copy li::before { content: ''; flex: none; width: 22px; height: 22px; border-radius: 50%; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a3a24' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center / 14px no-repeat; }
+  .look-copy .btn { justify-self: start; height: 54px; padding: 0 28px; font-size: 16px; }
+  @media (max-width: 480px) { .look-copy ul { grid-template-columns: 1fr; } }
 
   .more-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
   .more { display: grid; gap: clamp(12px, 1.4vw, 20px); }

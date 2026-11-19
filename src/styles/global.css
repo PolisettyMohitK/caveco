@@ -32,9 +32,10 @@
   --pad: clamp(20px, 3.6vw, 56px);   /* inside islands */
   /* LAYOUT GUIDELINE — one content line for the whole site.
      --gutter is the left (and right) edge of all content: the logo, every heading, text, accordions,
-     cards and the first card of every carousel start exactly on it. Content never starts left of it.
-     Only full-bleed photos (hero, band, room viewer) sit at --edge, and carousels may run past the
-     right gutter to the screen edge. On wide screens the line follows a centred 1440px column.
+     cards and grids start exactly on it. Content never starts left of it.
+     Full-bleed pieces sit at --edge instead: photos (hero, band, room viewer, closer look) and
+     carousels, whose first card starts at the left screen edge and which run to the right edge.
+     The carousel arrows stay on the gutter. On wide screens the line follows a centred 1440px column.
      Use .wrap (padding-inline: var(--gutter)) for any block of content; never hand-pad a section. */
   --content-max: 1440px;
   --gutter: max(calc(var(--edge) + var(--pad)), calc((100vw - var(--content-max)) / 2 + var(--edge) + var(--pad)));
@@ -164,3 +165,10 @@ main { padding-top: var(--header-h); }
 .no-js [data-reveal] { opacity: 1; transform: none; }
 .drift img { animation: drift 22s var(--ease) infinite alternate; }
 @keyframes drift { from { transform: scale(1.02); } to { transform: scale(1.1) translate(-1%, -1%); } }
+
+/* ---------- Carousels that fit ----------
+   When every card fits on screen (carousel.ts sets [data-fits]) the row has nothing to slide:
+   it is centred, so it spans evenly from the middle out, and the arrows and dots hide. */
+.car[data-fits] { cursor: auto; }
+.car[data-fits] .car-track { justify-content: center; }
+.car[data-fits] :is(.car-ctrl, [data-dots]) { display: none; }
