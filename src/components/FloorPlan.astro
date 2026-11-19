@@ -61,8 +61,9 @@ const inset = (b: Room['box']) => `inset(${b[1]}% ${100 - b[0] - b[2]}% ${100 - 
 </section>
 
 <style>
-  .fp { position: relative; height: calc(100svh + var(--n) * 46svh + 60svh); }
-  .fp-sticky { position: sticky; top: var(--header-h); height: calc(100svh - var(--header-h)); display: grid; grid-template-rows: auto 1fr; gap: clamp(14px, 2vw, 24px);
+  /* one stop per step (outline, each room, whole plan); the wheel moves one stop at a time */
+  .fp { position: relative; height: calc(100svh + (var(--n) + 1) * 40svh); }
+  .fp-sticky { position: sticky; top: var(--header-h); height: calc(100svh - var(--header-h)); display: grid; grid-template-rows: auto minmax(0, auto); align-content: center; gap: clamp(14px, 2vw, 24px);
     padding: clamp(16px, 2.4vw, 32px) var(--gutter); box-sizing: border-box; }
   .fp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .fp-head .h-section { margin: 0; color: var(--brown); font-weight: 700; letter-spacing: -0.035em; }
@@ -71,7 +72,7 @@ const inset = (b: Room['box']) => `inset(${b[1]}% ${100 - b[0] - b[2]}% ${100 - 
   @media (min-width: 900px) {
     .fp-body { grid-template-columns: 1.7fr 1fr; }
     /* the box hugs the plan's shape (wide plans don't float in a tall empty box) */
-    .fp-stage { align-self: center; width: 100%; aspect-ratio: calc(var(--ar) / 0.94); max-height: 100%; }
+    .fp-stage { align-self: center; width: 100%; aspect-ratio: calc(var(--ar) / 0.94); max-height: calc(100svh - var(--header-h) - 190px); }
   }
 
   .fp-stage { min-height: 0; position: relative; border-radius: var(--r-xl); background: #f3eee8; overflow: hidden; container-type: size; display: grid; place-items: center; }
@@ -117,10 +118,12 @@ const inset = (b: Room['box']) => `inset(${b[1]}% ${100 - b[0] - b[2]}% ${100 - 
 </style>
 
 <script>
-  import { ScrollTrigger } from '../scripts/motion';
+  import { gsap, ScrollTrigger } from '../scripts/motion';
 
-  const clamp = (v: number) => Math.max(0, Math.min(1, v));
-
+  // Step-based walkthrough. Stops: 0 = the empty house, 1..n = each room, n+1 = the whole plan.
+  // One wheel gesture moves one stop. Reaching a room zooms in and draws it (a timed animation, not
+  // tied to scroll speed). Rooms already drawn stay drawn; clicking a room zooms there and draws it
+  // only if it hasn't been drawn yet.
   document.querySelectorAll<HTMLElement>('[data-fp]').forEach((root) => {
     const plan = root.querySelector<HTMLElement>('[data-fp-plan]')!;
     const zoom = root.querySelector<HTMLElement>('[data-fp-zoom]')!;
@@ -131,11 +134,13 @@ const inset = (b: Room['box']) => `inset(${b[1]}% ${100 - b[0] - b[2]}% ${100 - 
     const inks = [...root.querySelectorAll<SVGGElement>('[data-fp-ink]')];
     const fills = [...root.querySelectorAll<HTMLElement>('[data-fp-fill]')];
     const n = rooms.length;
-    const INTRO = 0.12;   // share of the scroll for the empty house drawing in
-    const OUTRO = 0.94;   // after this, pull back to the whole plan
-    const seg = (OUTRO - 0.03) / Math.max(1, n);
-    let at = -2;
+    const LAST = n + 1;
+    const lenis = () => (window as any).__lenis;
 
+    const set = (el: Element | null | undefined, k: string, v: number) => (el as HTMLElement | null)?.style.setProperty(k, v.toFixed(3));
+
+    // ---- camera ----
+    let at = -2;
     const focus = (i: number) => {
       if (i === at) return;
       at = i;
@@ -144,7 +149,6 @@ const inset = (b: Room['box']) => `inset(${b[1]}% ${100 - b[0] - b[2]}% ${100 - 
       if (i < 0) { zoom.style.transform = ''; return; }
       const r = rooms[i];
       const l = parseFloat(r.style.left), t = parseFloat(r.style.top), w = parseFloat(r.style.width), h = parseFloat(r.style.height);
-      // lean in so the room fills about 60% of the frame; capped so the drawing stays sharp
       const cap = window.innerWidth < 900 ? 2.6 : 1.8;
       const s = Math.max(1, Math.min(cap, 60 / Math.max(w, h)));
       const cx = l + w / 2, cy = t + h / 2;
@@ -154,46 +158,84 @@ const inset = (b: Room['box']) => `inset(${b[1]}% ${100 - b[0] - b[2]}% ${100 - 
       zoom.style.transform = `translate(${tx}%, ${ty}%) scale(${s})`;
     };
 
-    const set = (el: Element | null | undefined, k: string, v: number) => (el as HTMLElement | null)?.style.setProperty(k, v.toFixed(3));
+    // ---- drawing (timed) ----
+    let wallsDone = false;
+    const drawWalls = () => {
+      if (wallsDone) return;
+      wallsDone = true;
+      if (!drawn) { gsap.to(plan, { clipPath: 'inset(0 0% 0 0)', duration: 1.4, ease: 'power2.inOut' }); return; }
+      const o = { d: 1, shell: 0 };
+      gsap.timeline()
+        .to(o, { d: 0, duration: 1.6, ease: 'power1.inOut', onUpdate: () => set(walls, '--d', o.d) })
+        .to(o, { shell: 1, duration: 0.6, ease: 'power1.out', onUpdate: () => { set(root, '--shell', o.shell); set(walls, '--o', 1 - o.shell); } }, '-=0.25');
+    };
+    const roomDone: boolean[] = rooms.map(() => false);
+    const drawRoom = (i: number) => {
+      if (!drawn || roomDone[i]) return;
+      roomDone[i] = true;
+      const o = { d: 1, fill: 0 };
+      gsap.timeline({ delay: 0.35 }) // let the camera start moving first
+        .to(o, { d: 0, duration: 1.3, ease: 'power1.inOut', onUpdate: () => set(inks[i], '--d', o.d) })
+        .to(o, { fill: 1, duration: 0.55, ease: 'power1.out', onUpdate: () => { set(inks[i], '--o', 1 - o.fill); fills[i].style.opacity = o.fill.toFixed(3); } }, '-=0.2');
+    };
+    const full = { v: 0 };
+    const showFull = (on: boolean) => gsap.to(full, { v: on ? 1 : 0, duration: on ? 0.9 : 0.5, ease: 'power1.inOut', overwrite: true, onUpdate: () => set(root, '--full', full.v) });
 
-    const render = (p: number) => {
-      const intro = clamp(p / INTRO);
-      const q = clamp((p - INTRO) / (1 - INTRO));
-      if (!drawn) {
-        plan.style.clipPath = `inset(0 ${(1 - intro) * 100}% 0 0)`;
-      } else {
-        // 1) the empty house: lines draw, then the real wall drawing takes over
-        set(walls, '--d', 1 - clamp(intro / 0.75));
-        const shell = clamp((intro - 0.7) / 0.3);
-        set(root, '--shell', shell);
-        set(walls, '--o', 1 - shell);
-        // 2) each room: lines draw, then the original drawing of that room fades in
-        inks.forEach((g, i) => {
-          const local = (q - 0.03 - i * seg) / seg;
-          const draw = clamp(local / 0.6);
-          const fill = clamp((local - 0.55) / 0.3);
-          set(g, '--d', 1 - draw);
-          set(g, '--o', 1 - fill);
-          fills[i].style.opacity = fill.toFixed(3);
-        });
-        // 3) the complete plan with dimensions and labels
-        set(root, '--full', clamp((q - OUTRO) / (1 - OUTRO) * 1.6));
-      }
-      const idx = Math.floor((q - 0.03) / seg);
-      focus(q < 0.03 || q >= OUTRO ? -1 : Math.min(n - 1, idx));
+    // ---- steps ----
+    let step = -1;
+    const goStep = (k: number) => {
+      if (k === step) return;
+      const was = step;
+      step = k;
+      drawWalls();
+      if (k >= 1 && k <= n) { focus(k - 1); drawRoom(k - 1); } else focus(-1);
+      if (k === LAST) showFull(true); else if (was === LAST) showFull(false);
     };
 
     const st = ScrollTrigger.create({
       trigger: root, start: 'top top', end: 'bottom bottom', invalidateOnRefresh: true,
-      onUpdate: (self) => render(self.progress),
+      onUpdate: (self) => goStep(Math.round(self.progress * LAST)),
     });
-    render(0);
+    // the empty house draws as soon as the section comes into view
+    ScrollTrigger.create({ trigger: root, start: 'top 65%', once: true, onEnter: drawWalls });
 
+    const yOf = (k: number) => st.start + (st.end - st.start) * (k / LAST);
+    const scrollToStep = (k: number, immediate = false) => {
+      const y = yOf(Math.max(0, Math.min(LAST, k)));
+      lenis() ? lenis().scrollTo(y, immediate ? { immediate: true } : { duration: 0.9, easing: (t: number) => 1 - Math.pow(1 - t, 3) }) : window.scrollTo({ top: y, behavior: immediate ? 'auto' : 'smooth' });
+    };
+
+    // One wheel gesture = one stop. Inertia from a trackpad is swallowed until the gesture ends.
+    let busyUntil = 0, lastWheel = 0;
+    window.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || Math.abs(e.deltaY) < 1 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      const y = window.scrollY;
+      if (y < st.start - 2 || y > st.end + 2) return;
+      const dir = e.deltaY > 0 ? 1 : -1;
+      const cur = Math.round(((y - st.start) / Math.max(1, st.end - st.start)) * LAST);
+      if ((dir > 0 && cur >= LAST && y >= st.end - 2) || (dir < 0 && cur <= 0 && y <= st.start + 2)) return; // leave the section normally
+      e.preventDefault();
+      e.stopPropagation();
+      const now = performance.now();
+      const newGesture = now - lastWheel > 220;
+      lastWheel = now;
+      if (now < busyUntil || (!newGesture && now < busyUntil + 400)) return;
+      busyUntil = now + 950;
+      scrollToStep(cur + dir);
+    }, { capture: true, passive: false });
+
+    // Touch / keyboard / scrollbar: when scrolling stops inside the section, settle on the nearest stop
+    ScrollTrigger.addEventListener('scrollEnd', () => {
+      const y = window.scrollY;
+      if (y <= st.start + 1 || y >= st.end - 1) return;
+      const k = Math.round(((y - st.start) / (st.end - st.start)) * LAST);
+      if (Math.abs(yOf(k) - y) > 2) scrollToStep(k);
+    });
+
+    // Clicking a room: jump straight there (only that room draws, if it hasn't yet)
     items.forEach((b, i) => b.addEventListener('click', () => {
-      // land where that room has finished drawing
-      const q = 0.03 + (i + 0.92) * seg;
-      const p = INTRO + (1 - INTRO) * q;
-      (window as any).__lenis?.scrollTo(st.start + (st.end - st.start) * p);
+      busyUntil = performance.now() + 600;
+      scrollToStep(i + 1, true);
     }));
   });
 </script>
